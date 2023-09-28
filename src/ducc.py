@@ -14,6 +14,93 @@ from tVQE import *
 import numpy as np
 
 # All the function for DUCC procedure
+def one_body_to_matrix_ph(operator, n_orb, n_occ):
+	"""
+	Converts particle-hole normal-ordered one-body fermionic operator to dense matrix
+	"""
+	one_body_mat = np.zeros((2*n_orb,2*n_orb))
+	terms = operator.terms 
+	for term in terms: 
+		# OO
+		if((term[0][0] < n_occ) and (term[1][0] < n_occ)):
+			one_body_mat[term[1][0],term[0][0]] += -terms.get(term)
+		# OV
+		elif(not(term[0][1])):
+			one_body_mat[term[1][0],term[0][0]] += -terms.get(term)
+		# VO
+		elif(term[1][1]):
+			one_body_mat[term[0][0],term[1][0]] +=  terms.get(term)
+		# VV
+		elif((term[0][0] >= n_occ) and (term[1][0] >= n_occ)):
+			one_body_mat[term[0][0],term[1][0]] +=  terms.get(term)
+	return one_body_mat
+
+def two_body_to_tensor_ph(operator, n_orb, n_occ):
+	"""
+	Converts particle-hole normal-ordered two-body fermionic operator to dense tensor
+	"""
+	two_body_tens = np.zeros((2*n_orb,2*n_orb,2*n_orb,2*n_orb))
+	terms = operator.terms 
+	for term in terms:
+		p = term[0][0]
+		q = term[1][0]
+		s = term[2][0]
+		r = term[3][0]
+		# OOOO
+		if((p < n_occ) and (q < n_occ) and (s < n_occ) and (r < n_occ)):
+			two_body_tens[s,r,q,p] +=  0.25*terms.get(term)
+			two_body_tens[s,r,p,q] += -0.25*terms.get(term)
+			two_body_tens[r,s,q,p] += -0.25*terms.get(term)
+			two_body_tens[r,s,p,q] +=  0.25*terms.get(term)
+		# OOOV and OOVO
+		elif((p < n_occ) and (q >= n_occ) and (s < n_occ) and (r < n_occ)):
+			two_body_tens[s,r,p,q] += -0.25*terms.get(term)
+			two_body_tens[s,r,q,p] +=  0.25*terms.get(term)
+			two_body_tens[r,s,p,q] +=  0.25*terms.get(term)
+			two_body_tens[r,s,q,p] += -0.25*terms.get(term)
+		# OVOO and VOOO
+		elif((p >= n_occ) and (q < n_occ) and (s < n_occ) and (r < n_occ)):
+			two_body_tens[r,p,s,q] += -0.25*terms.get(term)
+			two_body_tens[r,p,q,s] +=  0.25*terms.get(term)
+			two_body_tens[p,r,s,q] +=  0.25*terms.get(term)
+			two_body_tens[p,r,q,s] += -0.25*terms.get(term)
+		# OOVV and VVOO
+		elif((p >= n_occ) and (q >= n_occ) and (s < n_occ) and (r < n_occ)):
+			two_body_tens[s,r,q,p] +=  0.125*terms.get(term) 
+			two_body_tens[s,r,p,q] += -0.125*terms.get(term)
+			two_body_tens[r,s,q,p] += -0.125*terms.get(term)
+			two_body_tens[r,s,p,q] +=  0.125*terms.get(term)
+
+			two_body_tens[p,q,r,s] +=  0.125*terms.get(term)
+			two_body_tens[p,q,s,r] += -0.125*terms.get(term)
+			two_body_tens[q,p,r,s] += -0.125*terms.get(term)
+			two_body_tens[q,p,s,r] +=  0.125*terms.get(term)
+		# OVOV and VOOV and OVVO and VOVO
+		elif((p >= n_occ) and (q < n_occ) and (s >= n_occ) and (r < n_occ)):
+			two_body_tens[r,p,q,s] +=  0.25*terms.get(term)
+			two_body_tens[p,r,q,s] += -0.25*terms.get(term)
+			two_body_tens[r,p,s,q] += -0.25*terms.get(term)
+			two_body_tens[p,r,s,q] +=  0.25*terms.get(term)
+		# VVVO and VVOV
+		elif((p >= n_occ) and (q >= n_occ) and (s < n_occ) and (r >= n_occ)):
+			two_body_tens[p,q,r,s] +=  0.25*terms.get(term)
+			two_body_tens[q,p,r,s] += -0.25*terms.get(term)
+			two_body_tens[p,q,s,r] += -0.25*terms.get(term)
+			two_body_tens[q,p,s,r] +=  0.25*terms.get(term)
+		# VOVV and OVVV
+		elif((p >= n_occ) and (q >= n_occ) and (s >= n_occ) and (r < n_occ)):
+			two_body_tens[p,r,s,q] +=  0.25*terms.get(term)
+			two_body_tens[p,r,q,s] += -0.25*terms.get(term)
+			two_body_tens[r,p,s,q] += -0.25*terms.get(term)
+			two_body_tens[r,p,q,s] +=  0.25*terms.get(term)
+		# VVVV
+		elif((p >= n_occ) and (q >= n_occ) and (s >= n_occ) and (r >= n_occ)):
+			two_body_tens[p,q,r,s] +=  0.25*terms.get(term)
+			two_body_tens[p,q,s,r] += -0.25*terms.get(term)
+			two_body_tens[q,p,r,s] += -0.25*terms.get(term)
+			two_body_tens[q,p,s,r] +=  0.25*terms.get(term)
+	return two_body_tens
+
 
 thresh = 1e-15
 def tprint(tens):
@@ -49,22 +136,23 @@ def tprint(tens):
 		exit()
 
 def one_body_to_op(one_body_mat,n_orb,n_occ):
-	one_body_op = of.FermionOperator()
-	for p in range(0,n_occ):
-		for q in range(0,n_occ):
-			# O|O
-			one_body_op += of.FermionOperator(((q,0),(p,1)), -one_body_mat[p,q])
-	for p in range(0,n_occ):
-		for q in range(n_occ,2*n_orb):
-			# O|V
-			one_body_op += of.FermionOperator(((p,1),(q,0)),  one_body_mat[p,q])
-			# V|O
-			one_body_op += of.FermionOperator(((q,1),(p,0)),  one_body_mat[q,p])
-	for p in range(n_occ,2*n_orb):
-		for q in range(n_occ,2*n_orb):
-			# V|V
-			one_body_op += of.FermionOperator(((p,1),(q,0)),  one_body_mat[p,q])
-	return one_body_op 
+    print(n_orb)
+    one_body_op = of.FermionOperator()
+    for p in range(0,n_occ):
+        for q in range(0,n_occ):
+            # O|O
+            one_body_op += of.FermionOperator(((q,0),(p,1)), -one_body_mat[p,q])
+    for p in range(0,n_occ):
+        for q in range(n_occ,2*n_orb):
+            # O|V
+            one_body_op += of.FermionOperator(((p,1),(q,0)),  one_body_mat[p,q])
+            # V|O
+            one_body_op += of.FermionOperator(((q,1),(p,0)),  one_body_mat[q,p])
+    for p in range(n_occ,2*n_orb):
+        for q in range(n_occ,2*n_orb):
+            # V|V
+            one_body_op += of.FermionOperator(((p,1),(q,0)),  one_body_mat[p,q])
+    return one_body_op 
 
 def two_body_to_op(two_body_tens,n_orb,n_occ):
 	two_body_op = of.FermionOperator()
@@ -123,9 +211,6 @@ def two_body_to_op(two_body_tens,n_orb,n_occ):
 	return two_body_op
 
 def three_body_to_op(three_body_tens,n_orb,n_occ):
-	"""
-	Untested, use at your own risk
-	"""
 	three_body_op = of.FermionOperator()
 	for p in range(0,n_occ):
 		for q in range(0,n_occ):
@@ -1329,11 +1414,11 @@ def compute_ducc(fmat,vmat,t1,t2,n_a,n_b,n_occ,n_orb,act_max):
     #wn_op = normal_ordered(two_body_to_op(vmat_1,n_orb,n_occ))
     #hn = fock_op + wn_op
 
-    fock_op_proj = normal_ordered(one_body_to_op(fmat_1,n_orb,n_occ))
-    wn_op_proj = normal_ordered(two_body_to_op(vmat_1,n_orb,n_occ))
+    fock_op_proj = normal_ordered(one_body_to_op(fmat,act_max,n_occ))
+    wn_op_proj = normal_ordered(two_body_to_op(vmat,act_max,n_occ))
     hn_proj = fock_op_proj + wn_op_proj
 
-    comment = """
+    
     hn_s_12_proj = fn_s1_1_op + fn_s2_1_op + fn_s2_2_op + wn_s2_0_op + wn_s1_1_op + wn_s1_2_op
 
     hn_s_proj = hn_s_12_proj + wn_s2_3_op
@@ -1342,15 +1427,15 @@ def compute_ducc(fmat,vmat,t1,t2,n_a,n_b,n_occ,n_orb,act_max):
 
     fn_s_s_proj = fn_s_s_12_proj + fn_s2_s2_3_op
 
-    a2_ham = hn_proj + hn_s_12_proj + fn_s_s_12_proj
-    a3_ham = hn_proj + hn_s_proj
-    a4_ham = hn_proj + hn_s_proj + fn_s_s_proj
-    """
+    a2_ham =  hn_s_12_proj + fn_s_s_12_proj
+    a3_ham =  hn_s_proj
+    a4_ham =  hn_s_proj + fn_s_s_proj
+ 
 
     #print("Energy of A0 Hamiltonian = ", eigenspectrum(hn)[0].real)
     print("Energy of A1 Hamiltonian = ", eigenspectrum(hn_proj)[0].real)
-    #print("Energy of A2 Hamiltonian = ", eigenspectrum(a2_ham)[0].real)
-    #print("Energy of A3 Hamiltonian = ", eigenspectrum(a3_ham)[0].real)
-    #print("Energy of A4 Hamiltonian = ", eigenspectrum(a4_ham)[0].real)
+    print("Energy of A2 Hamiltonian = ", eigenspectrum(a2_ham)[0].real)
+    print("Energy of A3 Hamiltonian = ", eigenspectrum(a3_ham)[0].real)
+    print("Energy of A4 Hamiltonian = ", eigenspectrum(a4_ham)[0].real)
 
 

@@ -51,6 +51,14 @@ t2_amps = mccsd.t2
 fmat = sq_ham.make_f(range(n_a),range(n_b))
 vmat = sq_ham.make_v()
 
+#testing
+fock = sq_ham.export_FN_ph2(range(n_a),range(n_b))
+wn = sq_ham.export_WN_ph2(range(n_a),range(n_b))
+
+fmat_test = one_body_to_matrix_ph(fock, n_orb, n_occ)
+
+vmat_test = two_body_to_tensor_ph(wn, n_orb, n_occ)
+
 t1_amps, t2_amps = get_t_ext(t1_amps,t2_amps,n_a,n_b,act_max)
 
 t1_amps, t2_amps = transform_t_spatial_to_spin(t1_amps, t2_amps, n_a, n_b, n_orb)
