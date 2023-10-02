@@ -14,6 +14,17 @@ from tVQE import *
 import numpy as np
 
 # All the function for DUCC procedure
+def one_body_to_matrix(operator, n_orb):
+	"""
+	Converts normal-ordered one-body fermionic operator to dense matrix
+	F = f_{pq} p^ q
+	"""
+	one_body_mat = np.zeros((2*n_orb,2*n_orb))
+	terms = operator.terms 
+	for term in terms:
+		one_body_mat[term[0][0],term[1][0]] = terms.get(term)
+	return one_body_mat
+
 def one_body_to_matrix_ph(operator, n_orb, n_occ):
 	"""
 	Converts particle-hole normal-ordered one-body fermionic operator to dense matrix
@@ -34,6 +45,23 @@ def one_body_to_matrix_ph(operator, n_orb, n_occ):
 		elif((term[0][0] >= n_occ) and (term[1][0] >= n_occ)):
 			one_body_mat[term[0][0],term[1][0]] +=  terms.get(term)
 	return one_body_mat
+
+def two_body_to_tensor(operator, n_orb):
+	"""
+	Converts normal-ordered two-body fermionic operator to dense tensor
+	V = v_pqrs p^ q^ s r
+	"""
+	# if (operator.many_body_order != 4):
+	# 	print("Error: not a two-body operator")
+	# 	exit()
+	two_body_tensor = np.zeros((2*n_orb,2*n_orb,2*n_orb,2*n_orb))
+	terms = operator.terms 
+	for term in terms:
+		two_body_tensor[term[0][0],term[1][0],term[3][0],term[2][0]] = 0.25*terms.get(term)
+		two_body_tensor[term[1][0],term[0][0],term[3][0],term[2][0]] = -0.25*terms.get(term)
+		two_body_tensor[term[0][0],term[1][0],term[2][0],term[3][0]] = -0.25*terms.get(term)
+		two_body_tensor[term[1][0],term[0][0],term[2][0],term[3][0]] = 0.25*terms.get(term)
+	return two_body_tensor
 
 def two_body_to_tensor_ph(operator, n_orb, n_occ):
 	"""
@@ -100,6 +128,72 @@ def two_body_to_tensor_ph(operator, n_orb, n_occ):
 			two_body_tens[q,p,r,s] += -0.25*terms.get(term)
 			two_body_tens[q,p,s,r] +=  0.25*terms.get(term)
 	return two_body_tens
+
+
+
+def three_body_to_tensor(operator, n_orb):
+	"""
+	Converts normal_ordered three-body fermionic operator to dense tensor
+	W = w_pqrstu p^ q^ r^ u t s
+	"""
+	# if (operator.many_body_order != 6):
+	# 	print("Error: not a three-body operator")
+	# 	exit()
+	three_body_tensor = np.zeros((2*n_orb,2*n_orb,2*n_orb,2*n_orb,2*n_orb,
+								  2*n_orb))
+	terms = operator.terms 
+	for term in terms: 
+		coeff = terms.get(term)
+		p = term[0][0]
+		q = term[1][0]
+		r = term[2][0]
+		s = term[5][0]
+		t = term[4][0]
+		u = term[3][0]
+
+		three_body_tensor[p,q,r,s,t,u] =  (1.0/36.0)*coeff
+		three_body_tensor[p,q,r,s,u,t] = -(1.0/36.0)*coeff
+		three_body_tensor[p,q,r,t,s,u] = -(1.0/36.0)*coeff
+		three_body_tensor[p,q,r,t,u,s] =  (1.0/36.0)*coeff
+		three_body_tensor[p,q,r,u,s,t] =  (1.0/36.0)*coeff
+		three_body_tensor[p,q,r,u,t,s] = -(1.0/36.0)*coeff
+
+		three_body_tensor[p,r,q,s,t,u] = -(1.0/36.0)*coeff
+		three_body_tensor[p,r,q,s,u,t] =  (1.0/36.0)*coeff
+		three_body_tensor[p,r,q,t,s,u] =  (1.0/36.0)*coeff
+		three_body_tensor[p,r,q,t,u,s] = -(1.0/36.0)*coeff
+		three_body_tensor[p,r,q,u,s,t] = -(1.0/36.0)*coeff
+		three_body_tensor[p,r,q,u,t,s] =  (1.0/36.0)*coeff
+
+		three_body_tensor[q,p,r,s,t,u] = -(1.0/36.0)*coeff
+		three_body_tensor[q,p,r,s,u,t] =  (1.0/36.0)*coeff
+		three_body_tensor[q,p,r,t,s,u] =  (1.0/36.0)*coeff
+		three_body_tensor[q,p,r,t,u,s] = -(1.0/36.0)*coeff
+		three_body_tensor[q,p,r,u,s,t] = -(1.0/36.0)*coeff
+		three_body_tensor[q,p,r,u,t,s] =  (1.0/36.0)*coeff
+
+		three_body_tensor[q,r,p,s,t,u] =  (1.0/36.0)*coeff
+		three_body_tensor[q,r,p,s,u,t] = -(1.0/36.0)*coeff
+		three_body_tensor[q,r,p,t,s,u] = -(1.0/36.0)*coeff
+		three_body_tensor[q,r,p,t,u,s] =  (1.0/36.0)*coeff
+		three_body_tensor[q,r,p,u,s,t] =  (1.0/36.0)*coeff
+		three_body_tensor[q,r,p,u,t,s] = -(1.0/36.0)*coeff
+
+		three_body_tensor[r,p,q,s,t,u] =  (1.0/36.0)*coeff
+		three_body_tensor[r,p,q,s,u,t] = -(1.0/36.0)*coeff
+		three_body_tensor[r,p,q,t,s,u] = -(1.0/36.0)*coeff
+		three_body_tensor[r,p,q,t,u,s] =  (1.0/36.0)*coeff
+		three_body_tensor[r,p,q,u,s,t] =  (1.0/36.0)*coeff
+		three_body_tensor[r,p,q,u,t,s] = -(1.0/36.0)*coeff
+
+		three_body_tensor[r,q,p,s,t,u] = -(1.0/36.0)*coeff
+		three_body_tensor[r,q,p,s,u,t] =  (1.0/36.0)*coeff
+		three_body_tensor[r,q,p,t,s,u] =  (1.0/36.0)*coeff
+		three_body_tensor[r,q,p,t,u,s] = -(1.0/36.0)*coeff
+		three_body_tensor[r,q,p,u,s,t] = -(1.0/36.0)*coeff
+		three_body_tensor[r,q,p,u,t,s] =  (1.0/36.0)*coeff 
+
+	return three_body_tensor
 
 
 thresh = 1e-15
@@ -544,6 +638,72 @@ def transform_t_spatial_to_spin(t1_amps, t2_amps, n_a, n_b, n_orb):
 
     print(t2.shape)
     return t1, t2
+def get_many_body_terms(operator):
+	constant = of.FermionOperator()
+	one_body = of.FermionOperator()
+	two_body = of.FermionOperator()
+	three_body = of.FermionOperator()
+	terms = operator.terms 
+	for term in terms:
+		if(len(term) == 0):
+			constant += of.FermionOperator(term,terms.get(term))
+		elif(len(term) == 2):
+			one_body += of.FermionOperator(term,terms.get(term))
+		elif(len(term) == 4):
+			two_body += of.FermionOperator(term,terms.get(term))
+		elif(len(term) == 6):
+			three_body += of.FermionOperator(term,terms.get(term))
+		else:
+			print("Unexpected number of terms: %d"%len(term))
+	return(constant,one_body,two_body,three_body)
+
+
+def as_proj(operator,act_max):
+	proj_op = of.FermionOperator()
+	const, one_body, two_body, three_body = get_many_body_terms(operator)
+	# constant terms
+	proj_op += const 
+	# one-body terms
+	terms1 = one_body.terms
+	for term in terms1:
+		if(term[0][0] < act_max):
+			if(term[1][0] < act_max):
+				proj_op += of.FermionOperator(term,terms1.get(term))
+	# two-body terms
+	terms2 = two_body.terms
+	for term in terms2:
+		if(term[0][0] < act_max):
+			if(term[1][0] < act_max):
+				if(term[2][0] < act_max):
+					if (term[3][0] < act_max):
+						proj_op += of.FermionOperator(term,terms2.get(term))
+	# three-body terms
+	terms3 = three_body.terms
+	for term in terms3:
+		if(term[0][0] < act_max):
+			if(term[1][0] < act_max):
+				if(term[2][0] < act_max):
+					if (term[3][0] < act_max):
+						if(term[4][0] < act_max):
+							if(term[5][0] < act_max):
+								proj_op += of.FermionOperator(term,terms3.get(term))
+	return proj_op
+
+# Function to get the projected active space
+def proj_tens_to_as(term,act_max):
+    if(np.ndim(term) == 0):
+        print("It is a constant term.")
+        exit()
+    elif(np.ndim(term) == 2):
+        proj_term = term[0:2*act_max, 0:2*act_max]
+    elif(np.ndim(term) == 4): 
+        proj_term = term[0:2*act_max, 0:2*act_max, 0:2*act_max, 0:2*act_max]
+    elif(np.ndim(term) == 6): 
+        proj_term = term[0:2*act_max, 0:2*act_max, 0:2*act_max, 0:2*act_max, 0:2*act_max, 0:2*act_max]
+    else:
+	    print("TODO: implement a projection for a %dD tensor."%(np.ndim(term)))
+	    exit()
+    return proj_term
 
 def compute_ducc(fmat,vmat,t1,t2,n_a,n_b,n_occ,n_orb,act_max):
     # Extracting different blocks of F
@@ -635,6 +795,7 @@ def compute_ducc(fmat,vmat,t1,t2,n_a,n_b,n_occ,n_orb,act_max):
     fn_s1_1_op = normal_ordered(one_body_to_op(ft1_mat,act_max,n_occ))
     print("fn_s1_1_op")
     print(fn_s1_1_op)
+    fn_s1_0_op = of.FermionOperator('', float(ft1))
 
     # FT2
     # t_oovv = t2 and t_vvoo = transpose(t2)
@@ -1413,13 +1574,14 @@ def compute_ducc(fmat,vmat,t1,t2,n_a,n_b,n_occ,n_orb,act_max):
     #fock_op = normal_ordered(one_body_to_op(fmat_1,n_orb,n_occ))
     #wn_op = normal_ordered(two_body_to_op(vmat_1,n_orb,n_occ))
     #hn = fock_op + wn_op
+    #hn_proj = as_proj(hn,2*act_max)
 
     fock_op_proj = normal_ordered(one_body_to_op(fmat,act_max,n_occ))
     wn_op_proj = normal_ordered(two_body_to_op(vmat,act_max,n_occ))
     hn_proj = fock_op_proj + wn_op_proj
 
     
-    hn_s_12_proj = fn_s1_1_op + fn_s2_1_op + fn_s2_2_op + wn_s2_0_op + wn_s1_1_op + wn_s1_2_op
+    hn_s_12_proj = fn_s1_0_op + fn_s1_1_op + fn_s2_1_op + fn_s2_2_op + wn_s1_1_op + wn_s1_2_op + wn_s2_0_op + wn_s2_1_op + wn_s2_2_op
 
     hn_s_proj = hn_s_12_proj + wn_s2_3_op
 
@@ -1427,15 +1589,19 @@ def compute_ducc(fmat,vmat,t1,t2,n_a,n_b,n_occ,n_orb,act_max):
 
     fn_s_s_proj = fn_s_s_12_proj + fn_s2_s2_3_op
 
-    a2_ham =  hn_s_12_proj + fn_s_s_12_proj
-    a3_ham =  hn_s_proj
-    a4_ham =  hn_s_proj + fn_s_s_proj
+    a3_ham = hn_proj + hn_s_12_proj
+    a3_ham_3 =  hn_proj + hn_s_proj
+
+    a4_ham =  hn_proj + hn_s_12_proj + 0.5*fn_s_s_12_proj
+    a4_ham_3 =  hn_proj + hn_s_proj + 0.5*fn_s_s_proj
  
 
     #print("Energy of A0 Hamiltonian = ", eigenspectrum(hn)[0].real)
     print("Energy of A1 Hamiltonian = ", eigenspectrum(hn_proj)[0].real)
-    print("Energy of A2 Hamiltonian = ", eigenspectrum(a2_ham)[0].real)
+    #print("Energy of A2 Hamiltonian = ", eigenspectrum(a2_ham)[0].real)
     print("Energy of A3 Hamiltonian = ", eigenspectrum(a3_ham)[0].real)
+    print("Energy of A3_3 Hamiltonian = ", eigenspectrum(a3_ham_3)[0].real)
     print("Energy of A4 Hamiltonian = ", eigenspectrum(a4_ham)[0].real)
+    print("Energy of A4_3 Hamiltonian = ", eigenspectrum(a4_ham_3)[0].real)
 
 

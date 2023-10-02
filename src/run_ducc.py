@@ -49,18 +49,31 @@ mccsd.kernel()
 t1_amps = mccsd.t1
 t2_amps = mccsd.t2
 fmat = sq_ham.make_f(range(n_a),range(n_b))
-vmat = sq_ham.make_v()
+vmat = 0.25*sq_ham.make_v()
 
 #testing
-fock = sq_ham.export_FN_ph2(range(n_a),range(n_b))
-wn = sq_ham.export_WN_ph2(range(n_a),range(n_b))
+#fock = sq_ham.export_FN_ph(range(n_a),range(n_b))
+#wn = sq_ham.export_WN_ph(range(n_a),range(n_b))
 
-fmat_test = one_body_to_matrix_ph(fock, n_orb, n_occ)
-
-vmat_test = two_body_to_tensor_ph(wn, n_orb, n_occ)
+#fmat_test = one_body_to_matrix(fock, n_orb)
+#vmat_test = two_body_to_tensor(wn, n_orb)
+#fock_op = normal_ordered(one_body_to_op(fmat,n_orb,n_occ))
+#wn_op = normal_ordered(two_body_to_op(vmat,n_orb,n_occ))
 
 t1_amps, t2_amps = get_t_ext(t1_amps,t2_amps,n_a,n_b,act_max)
 
 t1_amps, t2_amps = transform_t_spatial_to_spin(t1_amps, t2_amps, n_a, n_b, n_orb)
 
 compute_ducc(fmat,vmat,t1_amps,t2_amps,n_a,n_b,n_occ,n_orb,act_max)
+
+
+#hn = fock_op + wn_op
+#hn_proj = as_proj(hn,2*act_max)
+#print("Energy of A1 Hamiltonian = ", eigenspectrum(hn_proj)[0].real)
+
+
+
+#sq_ham_act = sq_ham.extract_local_hamiltonian(act_max)
+#fermi_ham_act = sq_ham_act.export_FermionOperator()
+#print("Ground state energy in truncated basis:")
+#print(eigenspectrum(fermi_ham_act)[0]-E_scf)
