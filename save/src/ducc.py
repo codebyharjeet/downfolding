@@ -638,6 +638,8 @@ def transform_t_spatial_to_spin(t1_amps, t2_amps, n_a, n_b, n_orb):
 
     print(t2.shape)
     return t1, t2
+
+    
 def get_many_body_terms(operator):
 	constant = of.FermionOperator()
 	one_body = of.FermionOperator()
