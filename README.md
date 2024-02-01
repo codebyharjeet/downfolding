@@ -21,4 +21,4 @@ A python package to run double unitary coupled cluster (DUCC) calculations.
 
 4. Try running tests to make sure it is working
 
-        pytest test/*.py
+        pytest -v
