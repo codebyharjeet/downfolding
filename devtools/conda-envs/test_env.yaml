@@ -9,6 +9,14 @@ dependencies:
   - python
   - pip
 
+    # Package depends
+  - numpy
+  - scipy
+  - pyscf
+  - openfermion
+
+
+
     # Testing
   - pytest
   - pytest-cov
