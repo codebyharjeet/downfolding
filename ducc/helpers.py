@@ -129,18 +129,12 @@ class SQ_Hamiltonian:
 def init(molecule,charge,spin,basis,reference='rhf',n_frzn_occ=0, n_act=None, mo_order=None):
 # {{{
     #PYSCF inputs
-    print(" ---------------------------------------------------------")
-    print("                                                          ")
-    print("                      Using Pyscf:")
-    print("                                                          ")
-    print(" ---------------------------------------------------------")
-    print("                                                          ")
     mol = gto.Mole()
     mol.atom = molecule
 
     # this is needed to prevent openblas - openmp clash for some reason
     # todo: take out
-    lib.num_threads(1)
+    #lib.num_threads(1)
 
     mol.max_memory = 8e3 # MB
     mol.charge = charge

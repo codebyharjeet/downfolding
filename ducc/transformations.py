@@ -201,7 +201,7 @@ def three_body_to_tensor(operator, n_orb):
 
 
 def one_body_to_op(one_body_mat,n_orb,n_occ):
-    print(n_orb)
+    #print(n_orb)
     one_body_op = of.FermionOperator()
     for p in range(0,n_occ):
         for q in range(0,n_occ):
@@ -530,7 +530,7 @@ def transform_t_spatial_to_spin(t1_amps, t2_amps, n_a, n_b, n_orb):
             ab = 2*a+1
             t1[ib,ab-(n_a+n_b)] = t1_amps[1][i,a-n_b]
 
-    print(t1.shape)
+    #print(t1.shape)
     #print(t1)
 
     # expanding the t2 amplitude_aa
@@ -570,7 +570,7 @@ def transform_t_spatial_to_spin(t1_amps, t2_amps, n_a, n_b, n_orb):
                     bb = 2*b+1 
                     t2[ib,jb,ab-(n_a+n_b),bb-(n_a+n_b)]=t2_amps[2][i,j,a-n_b,b-n_b]
 
-    print(t2.shape)
+    #print(t2.shape)
     return t1, t2
 
 
