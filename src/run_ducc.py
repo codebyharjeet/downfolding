@@ -55,23 +55,115 @@ vmat = 0.25*sq_ham.make_v()
 #fock = sq_ham.export_FN_ph(range(n_a),range(n_b))
 #wn = sq_ham.export_WN_ph(range(n_a),range(n_b))
 
-#fmat_test = one_body_to_matrix(fock, n_orb)
-#vmat_test = two_body_to_tensor(wn, n_orb)
+#fmat_test = one_body_to_matrix_ph(fock, n_orb, n_occ)
+#vmat_test = two_body_to_tensor_ph(wn,n_orb,n_occ)
+
 #fock_op = normal_ordered(one_body_to_op(fmat,n_orb,n_occ))
 #wn_op = normal_ordered(two_body_to_op(vmat,n_orb,n_occ))
 
-t1_amps, t2_amps = get_t_ext(t1_amps,t2_amps,n_a,n_b,act_max)
+#t1_amps, t2_amps = get_t_ext(t1_amps,t2_amps,n_a,n_b,act_max)
 
-t1_amps, t2_amps = transform_t_spatial_to_spin(t1_amps, t2_amps, n_a, n_b, n_orb)
+#t1_amps, t2_amps = transform_t_spatial_to_spin(t1_amps, t2_amps, n_a, n_b, n_orb)
 
-compute_ducc(fmat,vmat,t1_amps,t2_amps,n_a,n_b,n_occ,n_orb,act_max)
+#compute_ducc(fmat,vmat,t1_amps,t2_amps,n_a,n_b,n_occ,n_orb,act_max)
+
+C = mf.mo_coeff
+
+h  = pyscf.scf.hf.get_hcore(mf.mol)
+j,k = mf.get_jk()
+h = C.T @ h @ C;
+j = C.T @ j @ C;
+k = C.T @ k @ C;
+h1 = mf.mo_coeff.T.dot(mf.get_hcore()).dot(mf.mo_coeff)
+
+Fao = mf.get_fock()
+Fmo = C.T @ Fao @ C
+
+#hello = Fmo-j+0.5*k
+#test = np.linalg.norm(hello-h1)
+#print("test = ",test)
+
+
+h2 = pyscf.ao2mo.kernel(mol, C, aosym="s4", compact=False)
+h2.shape = (n_orb, n_orb, n_orb, n_orb)
+
+fmat_spatial = np.zeros((n_orb,n_orb))
+vmat_spatial = np.zeros((n_orb,n_orb,n_orb,n_orb))
+for p in range(0,n_orb):
+        pa = 2*p
+        for q in range(0,n_orb):
+            qa = 2*q
+            qb = 2*q + 1
+            fmat_spatial[p,q] = fmat[pa,qa]
+print(fmat_spatial.shape)
+for p in range(0,n_orb):
+        pa = 2*p
+        pb = 2*p+1
+        for q in range(0,n_orb):
+            qa = 2*q
+            qb = 2*q+1
+            for r in range(0,n_orb):
+                ra = 2*r
+                rb = 2*r+1
+                for s in range(0,n_orb):
+                    sa = 2*s
+                    sb = 2*s+1
+                    # vmat_spatial[p,q,r,s] = vmat[pa,qb,ra,sb]
+                    vmat_spatial[p,r,q,s] = vmat[pa,qb,ra,sb]
+                    #vmat_spatial[p,q,r,s] = vmat[pa, ra,qb,sb]
+             
+print(vmat_spatial.shape)
+
+
+
+f_norm = np.linalg.norm(Fmo-fmat_spatial)
+print("Norm of one electron integral = ",f_norm)
+g_norm = np.linalg.norm(h2-vmat_spatial)
+print("Norm of two electron integral = ",g_norm)
+
+fmat_spatial = fmat_spatial -j+0.5*k
+
+act_spc = 5
+fmat_spatial_act = fmat_spatial[0:act_spc,0:act_spc]
+vmat_spatial_act = vmat_spatial[0:act_spc,0:act_spc,0:act_spc,0:act_spc]
+
+print("shape of fmat and vmat spatial = ",fmat_spatial.shape,vmat_spatial.shape)
+#comment = """
+cisolver = fci.direct_spin1.FCI()
+ecore = 0
+nroots = 1
+nelec = n_occ
+efci, ci = cisolver.kernel(fmat_spatial, vmat_spatial, fmat_spatial.shape[1], nelec, ecore=ecore,nroots =nroots,verbose=100)
+fci_dim = ci.shape[0]*ci.shape[1]
+print(" FCI:        %12.8f Dim:%6d"%(efci,fci_dim))
+#"""
+
+
+
+#print("One electron from pyscf")
+#tprint(Fmo)
+#print("After conversion from spin to spatial")
+#tprint(fmat_spatial)
+
+#g_two = proj_tens_to_as(h2,2)
+#print("Two electron from pyscf")
+#tprint(g_two)
+
+#print("Two electron spin to spatial transformation")
+#vmat_spatial = proj_tens_to_as(vmat_spatial,2)
+#tprint(vmat_spatial)
+
+
+
+
+
+
+
 
 
 #hn = fock_op + wn_op
 #hn_proj = as_proj(hn,2*act_max)
 #print("Energy of A1 Hamiltonian = ", eigenspectrum(hn_proj)[0].real)
-
-
 
 #sq_ham_act = sq_ham.extract_local_hamiltonian(act_max)
 #fermi_ham_act = sq_ham_act.export_FermionOperator()
