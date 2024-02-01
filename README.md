@@ -1,6 +1,3 @@
-<div align="left">
-  <img src="docs/src/ducc_logo.png" height="60px"/>
-</div>
 
 # DUCC
 
