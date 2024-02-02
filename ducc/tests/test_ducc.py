@@ -8,8 +8,8 @@ import pytest
 import ducc
 
 import scipy
-import vqe_methods
-import pyscf_helper
+#import vqe_methods
+#import pyscf_helper
 
 import pyscf
 from pyscf import lib
@@ -18,7 +18,7 @@ from pyscf.cc import ccsd
 
 import openfermion as of
 from openfermion import *
-from tVQE import *
+#from tVQE import *
 
 import numpy as np
 
