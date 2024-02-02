@@ -13,7 +13,7 @@ import scipy
 
 import pyscf
 from pyscf import lib
-from pyscf import gto, scf, mcscf, fci, ao2mo, lo, molden, cc
+from pyscf import gto, scf, mcscf, fci, ao2mo, lo, cc
 from pyscf.cc import ccsd
 
 import openfermion as of
