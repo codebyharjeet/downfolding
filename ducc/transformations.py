@@ -13,6 +13,7 @@ from openfermion import *
 #from tVQE import *
 
 import numpy as np
+import copy as cp
 
 
 def one_body_to_matrix(operator, n_orb):

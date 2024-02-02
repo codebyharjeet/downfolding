@@ -13,6 +13,7 @@ from openfermion import *
 #from tVQE import *
 
 import numpy as np
+import copy as cp
 
 
 def compute_ft1(f, t, n_a, n_b, n_orb):

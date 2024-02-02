@@ -23,6 +23,7 @@ from openfermion import *
 import numpy as np
 
 
+
 @pytest.fixture(scope="module")
 def beryllium_atom():
     geometry = [('Be', (0,0,0))]

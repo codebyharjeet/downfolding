@@ -13,6 +13,7 @@ from openfermion import *
 #from tVQE import *
 
 import numpy as np
+import copy as cp
 
 
 def print_quote():
