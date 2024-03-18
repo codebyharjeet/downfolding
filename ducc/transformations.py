@@ -830,7 +830,6 @@ def get_spin_to_spatial(integral, n_orb):
             pa = 2 * p
             for q in range(0, n_orb):
                 qa = 2 * q
-                qb = 2 * q + 1
                 integral_spatial[p, q] = integral[pa, qa]
     elif np.ndim(integral) == 4:
         integral_spatial = np.zeros((n_orb, n_orb, n_orb, n_orb))
@@ -850,6 +849,61 @@ def get_spin_to_spatial(integral, n_orb):
                         integral_spatial[p, r, q, s] = integral[pa, qb, ra, sb]
                         # integral_spatial[p,r,q,s] = integral[pb,qa,rb,sa]
                         # vmat_spatial[p,q,r,s] = vmat[pa, ra,qb,sb]
+
+    return integral_spatial
+
+def get_spin_to_spatial_1(integral, n_orb):
+    if np.ndim(integral) == 0:
+        print("It is a constant term.")
+        exit()
+
+    elif np.ndim(integral) == 2:
+        integral_spatial = np.zeros((n_orb, n_orb))
+        for p in range(0, n_orb):
+            pa = 2 * p
+            for q in range(0, n_orb):
+                qa = 2 * q
+                integral_spatial[p, q] = integral[pa, qa]
+                if p != q:
+                    integral_spatial[q, p] = integral[pa, qa]
+                    
+    elif np.ndim(integral) == 4:
+        integral_spatial = np.zeros((n_orb, n_orb, n_orb, n_orb))
+        for p in range(0, n_orb):
+            pa = 2 * p
+            pb = 2 * p + 1
+            for q in range(0, n_orb):
+                qa = 2 * q
+                qb = 2 * q + 1
+                for r in range(0, n_orb):
+                    ra = 2 * r
+                    rb = 2 * r + 1
+                    for s in range(0, n_orb):
+                        sa = 2 * s
+                        sb = 2 * s + 1
+                        #prqs
+                        integral_spatial[p, r, q, s] = integral[pa, qb, ra, sb]
+                        #qspr
+                        if integral_spatial[q, s, p, r] == 0:
+                            integral_spatial[q, s, p, r] = integral[pa, qb, ra, sb]
+                        #prsq
+                        if integral_spatial[p, r, s, q] == 0:
+                            integral_spatial[p, r, s, q] = integral[pa, qb, ra, sb]
+                        #sqpr
+                        if integral_spatial[s, q, p, r] == 0:
+                            integral_spatial[s, q, p, r] = integral[pa, qb, ra, sb]
+                        #rpqs
+                        if integral_spatial[r, p, q, s] == 0:
+                            integral_spatial[r, p, q, s] = integral[pa, qb, ra, sb]
+                        #qsrp
+                        if integral_spatial[q, s, r, p] == 0:
+                            integral_spatial[q, s, r, p] = integral[pa, qb, ra, sb]
+                        #rpsq
+                        if integral_spatial[r, p, s, q] == 0:
+                            integral_spatial[r, p, s, q] = integral[pa, qb, ra, sb]
+                        #sqrp
+                        if integral_spatial[s, q, r, p] == 0:
+                            integral_spatial[s, q, r, p] = integral[pa, qb, ra, sb]
 
     return integral_spatial
 
