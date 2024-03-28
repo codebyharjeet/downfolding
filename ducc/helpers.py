@@ -83,6 +83,52 @@ class SQ_Hamiltonian:
         e = e1 + e2
         return e
 
+
+    def export_FermionOperator(self, shift=0):
+        #Integral objects are already in spin-orbital form (chemist's notation)
+        fermi_op = of.FermionOperator()
+
+        #H
+        for p in range(0,self.n_orb):
+            p_a = 2*p
+            p_b = 2*p+1
+            for q in range(0,self.n_orb):
+                q_a = 2*q
+                q_b = 2*q+1
+                #aa
+                fermi_op += of.FermionOperator(((p_a+shift,1),(q_a+shift,0)), self.int_H[p_a,q_a])
+                #bb
+                fermi_op += of.FermionOperator(((p_b+shift,1),(q_b+shift,0)), self.int_H[p_b,q_b])
+
+        #V
+        for p in range(0,self.n_orb):
+            p_a = 2*p
+            p_b = 2*p+1
+            for q in range(0,self.n_orb):
+                q_a = 2*q
+                q_b = 2*q+1
+                for r in range(0,self.n_orb):
+                    r_a = 2*r
+                    r_b = 2*r+1
+                    for s in range(0,self.n_orb):
+                        s_a = 2*s
+                        s_b = 2*s+1
+                        #aaaa
+                        fermi_op += 0.5 * of.FermionOperator(((p_a+shift,1),
+                                    (q_a+shift,1),(s_a+shift,0),(r_a+shift,0)),self.int_V[p_a,r_a,q_a,s_a])
+                        #aabb
+                        fermi_op += 0.5 * of.FermionOperator(((p_a+shift,1),
+                                    (q_b+shift,1),(s_b+shift,0),(r_a+shift,0)),self.int_V[p_a,r_a,q_b,s_b])
+                        #bbaa
+                        fermi_op += 0.5 * of.FermionOperator(((p_b+shift,1),
+                                    (q_a+shift,1),(s_a+shift,0),(r_b+shift,0)),self.int_V[p_b,r_b,q_a,s_a])
+                        #bbbb
+                        fermi_op += 0.5 * of.FermionOperator(((p_b+shift,1),
+                                    (q_b+shift,1),(s_b+shift,0),(r_b+shift,0)),self.int_V[p_b,r_b,q_b,s_b])
+
+        return fermi_op
+
+
     def make_f(self, config_a, config_b):
         n_orb = self.n_orb
         f = cp.deepcopy(self.int_H)
