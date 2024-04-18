@@ -115,9 +115,11 @@ def get_ducc_ham(
 ):
     one_body = np.zeros((2 * n_orb, 2 * n_orb))
     two_body = np.zeros((2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb))
-    three_body = np.zeros(
-        (2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb)
-    )
+    three_body = 0
+    if compute_three_body == True:
+        three_body = np.zeros(
+            (2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb)
+        )
     constant = 0
 
     f_blocks, v_blocks = ducc.get_integral_blocks(fmat, 0.25 * vmat, n_a, n_b, n_orb)
@@ -175,9 +177,12 @@ def get_ducc_ham(
     two_body_anti += 0.25 * vmat
     two_body_op = normal_ordered(ducc.two_body_to_op(two_body_anti, act_max, n_occ))
 
-    three_body_op = normal_ordered(ducc.three_body_to_op(three_body, act_max, n_occ))
+    a4_3_ham = constant_op + one_body_op + two_body_op
 
-    a4_3_ham = constant_op + one_body_op + two_body_op + three_body_op
+    if compute_three_body == True:
+        three_body_op = normal_ordered(ducc.three_body_to_op(three_body, act_max, n_occ))
+        a4_3_ham += three_body_op
+
 
     return a4_3_ham
 

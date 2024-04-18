@@ -83,6 +83,7 @@ ecore = constant
 nroots = 1
 nelec = n_occ
 
+
 efci_orgnl,ci_orgnl = cisolver.kernel(h1, h2, h1.shape[1], nelec, max_space=450, ecore=ecore,nroots =nroots,verbose=5)
 fci_dim_orgnl = ci_orgnl.shape[0]*ci_orgnl.shape[1]
 print(" FCI:        %12.8f Dim:%6d"%(efci_orgnl,fci_dim_orgnl))

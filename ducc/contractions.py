@@ -311,14 +311,17 @@ def compute_wt2(v, t, n_a, n_b, n_orb, compute_three_body=False):
     # Initializing the wt2_mat_2 two body
     wt2_mat_2 = np.zeros((2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb))
     # print("wt2_mat_2 = ",wt2_mat_2.shape)
+    wt2_mat_3 = 0
 
-    # Initializing the wt2_mat_3 three body
-    wt2_mat_3 = np.zeros(
-        (2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb)
-    )
     # print("wt2_mat_3 = ",wt2_mat_3.shape)
 
     if compute_three_body == True:
+
+        # Initializing the wt2_mat_3 three body
+        wt2_mat_3 = np.zeros(
+            (2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb)
+        )
+
         wt2ooooov = 0
         wt2ooooov += -0.250000000 * np.einsum(
             "kbij,lmab->klmija", v["ovoo"], t["oovv"], optimize="optimal"
@@ -984,13 +987,16 @@ def compute_ft2t2(f, t, n_a, n_b, n_orb, compute_three_body=False):
     ft2t2_mat_2 = np.zeros((2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb))
     # print("ft2t2_mat_2 = ",ft2t2_mat_2.shape)
 
-    # Initializing the ft2t2_mat_3 three body
-    ft2t2_mat_3 = np.zeros(
-        (2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb)
-    )
-    # print("ft2t2_mat_3 = ",ft2t2_mat_3.shape)
+    ft2t2_mat_3 = 0
+
 
     if compute_three_body == True:
+        # Initializing the ft2t2_mat_3 three body
+        ft2t2_mat_3 = np.zeros(
+            (2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb, 2 * n_orb)
+        )
+        # print("ft2t2_mat_3 = ",ft2t2_mat_3.shape)
+
         ft2t2ooooov = 0
         ft2t2ooooov += -0.250000000 * np.einsum(
             "ib,jkac,bclm->ijklma", f["ov"], t["oovv"], t["vvoo"], optimize="optimal"
