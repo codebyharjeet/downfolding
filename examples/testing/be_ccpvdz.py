@@ -54,6 +54,17 @@ vmat = sq_ham.make_v()
 t1_amps, t2_amps = ducc.get_t_ext(t1_amps,t2_amps,n_a,n_b,act_max)
 t1_amps, t2_amps = ducc.transform_t_spatial_to_spin(t1_amps, t2_amps, n_a, n_b, n_orb)
 
+f_blocks, v_blocks = ducc.get_integral_blocks(fmat, 0.25 * vmat, n_a, n_b, n_orb)
+t_blocks = ducc.get_t_blocks(t1_amps, t2_amps)
+
+ft1_mat, ft1_const = ducc.compute_ft1(f_blocks, t_blocks, n_a, n_b, n_orb)
+
+ft1_mat_op = normal_ordered(ducc.one_body_to_op(ft1_mat, n_orb, n_occ))
+print(ft1_mat_op)
+
+
+exit()
+
 """
 constant, one_body, two_body_anti = ducc.get_ducc_a2(fmat,vmat,t1_amps,t2_amps,n_a,n_b,n_orb,n_occ,act_max,compute_three_body=False)
 
@@ -64,7 +75,7 @@ fmat_spatial = ducc.get_spin_to_spatial_1(one_body,n_orb)
 vmat_spatial = ducc.get_spin_to_spatial_1(two_body_anti,n_orb)
 """
 
-#"""
+"""
 umat_1 = ducc.get_u(vmat,range(n_a),range(n_b))
 fmat -= umat_1
 
@@ -72,8 +83,45 @@ fmat_spatial = ducc.get_spin_to_spatial_1(fmat,n_orb)
 vmat_spatial = ducc.get_spin_to_spatial_1(vmat,n_orb)
 
 constant = 0
-#"""
+"""
 
+
+one_body_op = normal_ordered(ducc.one_body_to_op(fmat, act_max, n_occ))
+two_body_op = normal_ordered(ducc.two_body_to_op(vmat, act_max, n_occ))
+ham = one_body_op + 0.25*two_body_op
+print("ham constructed as fermoperator")
+
+import time
+
+# this one is not fast
+start = time.time()
+ham_sparse_number = get_number_preserving_sparse_operator(ham, 2*n_orb, n_occ)
+print("ham contructed with number preserving")
+energy_3, state_3 = get_ground_state(ham_sparse_number)
+print("fci energy sparse 3 number = ",energy_3)
+end = time.time()
+print("Computed in = ",end - start)
+
+# this is fast
+start_1 = time.time()
+ham_sparse = get_sparse_operator(ham)
+print("ham contructed in matrix")
+energy_2, state = get_ground_state(ham_sparse)
+print("fci energy sparse 2 = ",energy_2)
+end_1 = time.time()
+print("Computed in = ",end_1 - start_1)
+
+"""
+energy_1 = sparse_eigenspectrum(ham_sparse)
+print("fci energy sparse = ",energy_1[0].real)
+
+energy = eigenspectrum(ham)
+print("fci energy = ",energy[0].real)
+"""
+
+
+
+"""
 h1 = fmat_spatial[0:act_max,0:act_max]
 h2 = vmat_spatial[0:act_max,0:act_max,0:act_max,0:act_max]  
 
@@ -91,3 +139,4 @@ print(" FCI:        %12.8f Dim:%6d"%(efci_orgnl,fci_dim_orgnl))
 print(" SCF:        %12.8f"%(E_scf))
 
 print(" Correlation energy:        %12.8f"%(efci_orgnl-E_scf))
+"""
