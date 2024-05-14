@@ -787,7 +787,7 @@ def one_body_mat2dic(mat,n_occ,n_act,n_orb):
 		dic["Vv"] = mat[2*n_act:2*n_orb,n_occ:2*n_act]
 		dic["VV"] = mat[2*n_act:2*n_orb,2*n_act:2*n_orb]
 	return dic 
-
+"""
 def one_body_dic2mat(dic,n_occ,n_act,n_orb):
 	if(n_orb > n_act):
 		mat = np.zeros((2*n_orb,2*n_orb))
@@ -1132,7 +1132,7 @@ def three_body_dic2ten(dic,n_occ,n_act):
 			case "vvvvvv":
 				ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] =  dic["vvvvvv"]
 	return ten
-
+"""
 def t1_mat2dic(t1_amps,n_a,n_act,n_orb):
 	n_virt_int_a = n_act - n_a 
 	n_virt_ext_a = n_orb - n_act  

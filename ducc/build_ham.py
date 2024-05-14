@@ -100,7 +100,6 @@ def compute_ducc_of(
     return eigenspectrum(a4_3_ham)[0].real
 
 
-
 def get_ducc_ham(
     fmat,
     vmat,
@@ -171,16 +170,16 @@ def get_ducc_ham(
     constant_op = of.FermionOperator("", float(constant))
 
     one_body += fmat
-    one_body_op = normal_ordered(ducc.one_body_to_op(one_body, act_max, n_occ))
+    one_body_op = normal_ordered(ducc.one_body_to_op(one_body, n_occ, act_max))
 
     two_body_anti = ducc.antisymmetrize_residual(two_body, n_occ, n_orb)
     two_body_anti += 0.25 * vmat
-    two_body_op = normal_ordered(ducc.two_body_to_op(two_body_anti, act_max, n_occ))
+    two_body_op = normal_ordered(ducc.two_body_to_op(two_body_anti, n_occ, act_max))
 
     a4_3_ham = constant_op + one_body_op + two_body_op
 
     if compute_three_body == True:
-        three_body_op = normal_ordered(ducc.three_body_to_op(three_body, act_max, n_occ))
+        three_body_op = normal_ordered(ducc.three_body_to_op(three_body, n_occ, act_max))
         a4_3_ham += three_body_op
 
 
@@ -320,8 +319,6 @@ def get_ducc_a2(
     #two_body += vmat
 
     return constant, one_body, two_body_anti
-
-
 
 
 def get_ducc_integrals(
