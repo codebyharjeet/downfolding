@@ -79,7 +79,7 @@ three_body = ducc.rand_3_body(n_act)
 three_body_op = normal_ordered(ducc.three_body_to_op(three_body,n_occ,n_act))
 # print(three_body_op)
 print("Hermitian Test")
-# print(is_hermitian(three_body_op))
+print(is_hermitian(three_body_op))
 print(normal_ordered(three_body_op - hermitian_conjugated(three_body_op)))
 """
 
@@ -251,7 +251,7 @@ print(terms[2])
 print("diff")
 #print(fn_s2_s1_s1_op_test-fn_s2_s1_s1_op)
 """
-
+"""
 # Test [[[Fn,S1],S2],S2]
 print("Test [[[Fn,S1],S2],S2]")
 fn_s2_s1_s1_dic = ducc.fn_s2_s1_s1(fdic,t1dic,t2dic)
@@ -270,3 +270,4 @@ print(terms[1])
 print(terms[2])
 print("diff")
 #print(fn_s2_s1_s1_op_test-fn_s2_s1_s1_op)
+"""

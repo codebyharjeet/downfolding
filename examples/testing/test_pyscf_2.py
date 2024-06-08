@@ -29,10 +29,11 @@ sq_ham.init(h, g, C, S)
 print(" HF Energy: %21.15f" %(E_nuc + sq_ham.energy_of_determinant(range(n_a),range(n_b))))
 
 n_occ = n_a+n_b
-n_act = 4
+n_act = 5
 n_frz = 0
 act_max = n_frz+n_act
 shift = 2*n_frz
+print("Size of the active space (MOs) = ",act_max)
 
 mf = scf.RHF(mol)
 mf.conv_tol_grad = 1e-14
@@ -50,7 +51,6 @@ mccsd.conv_tol_normt = 1e-10
 mccsd.max_cycle = 1000
 mccsd.kernel()
 
-
 t1_amps = mccsd.t1
 t2_amps = mccsd.t2
 #t1_amps, t2_amps = ducc.get_t_ext(t1_amps,t2_amps,n_a,n_b,n_act)
@@ -60,7 +60,7 @@ fmat = sq_ham.make_f(range(n_a),range(n_b))
 fdic = ducc.one_body_mat2dic(fmat,n_occ,n_act,n_orb)
 fop = ducc.one_body_to_op(fmat,n_occ,n_orb)
 
-vten = 0.25*sq_ham.make_v()
+vten = sq_ham.make_v()
 vdic = ducc.two_body_ten2dic(vten,n_occ,n_act,n_orb)
 vop = ducc.two_body_to_op(vten,n_occ,n_orb)
 

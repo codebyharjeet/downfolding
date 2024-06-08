@@ -444,10 +444,6 @@ def get_spatial_to_spin(integral, n_orb):
         )
     return integral_spin
 
-
-
-
-
 def t1_to_op(t1_amps):
 	n_a = t1_amps[0].shape[0]
 	n_virt_a = t1_amps[0].shape[1]
@@ -520,7 +516,6 @@ def t2_to_ext(t2,n_act):
 					t2[1][i,j,a,b] = 0
 					t2[2][i,j,a,b] = 0
 	return t2 
-
 
 def one_body_to_op(one_body_mat,n_occ,n_orb):
 	one_body_op = of.FermionOperator()
@@ -787,43 +782,43 @@ def one_body_mat2dic(mat,n_occ,n_act,n_orb):
 		dic["Vv"] = mat[2*n_act:2*n_orb,n_occ:2*n_act]
 		dic["VV"] = mat[2*n_act:2*n_orb,2*n_act:2*n_orb]
 	return dic 
-"""
+
 def one_body_dic2mat(dic,n_occ,n_act,n_orb):
 	if(n_orb > n_act):
 		mat = np.zeros((2*n_orb,2*n_orb))
 		for key in dic.keys():
-			match key:
-				case "oo":
-					mat[0:n_occ,0:n_occ] = dic["oo"]
-				case "ov":
-					mat[0:n_occ,n_occ:2*n_act] = dic["ov"]
-				case "vo":
-					mat[n_occ:2*n_act,0:n_occ] = dic["vo"]
-				case "vv":
-					mat[n_occ:2*n_act,n_occ:2*n_act] = dic["vv"]
-				case "oV":
-					mat[0:n_occ,2*n_act:2*n_orb] = dic["oV"]
-				case "Vo":
-					mat[2*n_act:2*n_orb,0:n_occ] = dic["Vo"]
-				case "vV":  
-					mat[n_occ:2*n_act,2*n_act:2*n_orb] = dic["vV"] 
-				case "Vv":
-					mat[2*n_act:2*n_orb,n_occ:2*n_act] = dic["Vv"] 
-				case "VV":
-					mat[2*n_act:2*n_orb,2*n_act:2*n_orb] = dic["VV"]
+			if key == "oo":
+				mat[0:n_occ,0:n_occ] = dic["oo"]
+			elif key == "oo":
+				mat[0:n_occ,0:n_occ] = dic["oo"]
+			elif key == "ov":
+				mat[0:n_occ,n_occ:2*n_act] = dic["ov"]
+			elif key == "vo":
+				mat[n_occ:2*n_act,0:n_occ] = dic["vo"]
+			elif key == "vv":
+				mat[n_occ:2*n_act,n_occ:2*n_act] = dic["vv"]
+			elif key == "oV":
+				mat[0:n_occ,2*n_act:2*n_orb] = dic["oV"]
+			elif key == "Vo":
+				mat[2*n_act:2*n_orb,0:n_occ] = dic["Vo"]
+			elif key == "vV":  
+				mat[n_occ:2*n_act,2*n_act:2*n_orb] = dic["vV"] 
+			elif key == "Vv":
+				mat[2*n_act:2*n_orb,n_occ:2*n_act] = dic["Vv"] 
+			elif key == "VV":
+				mat[2*n_act:2*n_orb,2*n_act:2*n_orb] = dic["VV"]
 		return mat 
 	else:
 		mat = np.zeros((2*n_act,2*n_act))
 		for key in dic.keys():
-			match key:
-				case "oo":
-					mat[0:n_occ,0:n_occ] = dic["oo"]
-				case "ov":
-					mat[0:n_occ,n_occ:2*n_act] = dic["ov"]
-				case "vo":
-					mat[n_occ:2*n_act,0:n_occ] = dic["vo"]
-				case "vv":
-					mat[n_occ:2*n_act,n_occ:2*n_act] = dic["vv"]
+			if key == "oo":
+				mat[0:n_occ,0:n_occ] = dic["oo"]
+			elif key == "ov":
+				mat[0:n_occ,n_occ:2*n_act] = dic["ov"]
+			elif key == "vo":
+				mat[n_occ:2*n_act,0:n_occ] = dic["vo"]
+			elif key == "vv":
+				mat[n_occ:2*n_act,n_occ:2*n_act] = dic["vv"]
 		return mat 
 
 def two_body_ten2dic(ten,n_occ,n_act,n_orb):
@@ -877,153 +872,151 @@ def two_body_dic2ten(dic,n_occ,n_act,n_orb):
 	if(n_orb > n_act):
 		ten = np.zeros((2*n_orb,2*n_orb,2*n_orb,2*n_orb))
 		for key in dic.keys():
-			match key:
-				case "oooo":
-					ten[0:n_occ,0:n_occ,0:n_occ,0:n_occ] = dic["oooo"]
-				case "ooov":
-					ten[0:n_occ,0:n_occ,0:n_occ,n_occ:2*n_act] = dic["ooov"]
-					ten[0:n_occ,0:n_occ,n_occ:2*n_act,0:n_occ] = -np.einsum("ijka->ijak",dic["ooov"],optimize="optimal")
-				case "oovv":
-					ten[0:n_occ,0:n_occ,n_occ:2*n_act,n_occ:2*n_act] = dic["oovv"]
-				case "ovoo":
-					ten[0:n_occ,n_occ:2*n_act,0:n_occ,0:n_occ] = dic["ovoo"]
-					ten[n_occ:2*n_act,0:n_occ,0:n_occ,0:n_occ] = -np.einsum("iajk->aijk",dic["ovoo"],optimize="optimal")
-				case "ovov":
-					ten[0:n_occ,n_occ:2*n_act,0:n_occ,n_occ:2*n_act] =  dic["ovov"]
-					ten[0:n_occ,n_occ:2*n_act,n_occ:2*n_act,0:n_occ] = -np.einsum("iajb->iabj",dic["ovov"],optimize="optimal")
-					ten[n_occ:2*n_act,0:n_occ,0:n_occ,n_occ:2*n_act] = -np.einsum("iajb->aijb",dic["ovov"],optimize="optimal")
-					ten[n_occ:2*n_act,0:n_occ,n_occ:2*n_act,0:n_occ] =  np.einsum("iajb->aibj",dic["ovov"],optimize="optimal")
-				case "ovvv":
-					ten[0:n_occ,n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act] =  dic["ovvv"]
-					ten[n_occ:2*n_act,0:n_occ,n_occ:2*n_act,n_occ:2*n_act] = -np.einsum("iabc->aibc",dic["ovvv"],optimize="optimal") 
-				case "vvoo":
-					ten[n_occ:2*n_act,n_occ:2*n_act,0:n_occ,0:n_occ] =  dic["vvoo"]
-				case "vvov":
-					ten[n_occ:2*n_act,n_occ:2*n_act,0:n_occ,n_occ:2*n_act] =  dic["vvov"]
-					ten[n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act,0:n_occ] = -np.einsum("abic->abci",dic["vvov"],optimize="optimal")
-				case "vvvv":
-					ten[n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act] =  dic["vvvv"]	
-				case "oooV":
-					ten[0:n_occ,0:n_occ,0:n_occ,2*n_act:2*n_orb] =  dic["oooV"]
-					ten[0:n_occ,0:n_occ,2*n_act:2*n_orb,0:n_occ] = -np.einsum("ijkA->ijAk",dic["oooV"],optimize="optimal")
-				case "oovV":
-					ten[0:n_occ,0:n_occ,n_occ:2*n_act,2*n_act:2*n_orb] =  dic["oovV"]
-					ten[0:n_occ,0:n_occ,2*n_act:2*n_orb,n_occ:2*n_act] = -np.einsum("ijaA->ijAa",dic["oovV"],optimize="optimal")
-				case "ooVV":
-					ten[0:n_occ,0:n_occ,2*n_act:2*n_orb,2*n_act:2*n_orb] =  dic["ooVV"]
-				case "ovoV":
-					ten[0:n_occ,n_occ:2*n_act,0:n_occ,2*n_act:2*n_orb] =  dic["ovoV"] 
-					ten[n_occ:2*n_act,0:n_occ,0:n_occ,2*n_act:2*n_orb] = -np.einsum("iajA->aijA",dic["ovoV"],optimize="optimal")
-					ten[0:n_occ,n_occ:2*n_act,2*n_act:2*n_orb,0:n_occ] = -np.einsum("iajA->iaAj",dic["ovoV"],optimize="optimal")
-					ten[n_occ:2*n_act,0:n_occ,2*n_act:2*n_orb,0:n_occ] =  np.einsum("iajA->aiAj",dic["ovoV"],optimize="optimal")
-				case "ovvV":
-					ten[0:n_occ,n_occ:2*n_act,n_occ:2*n_act,2*n_act:2*n_orb] =  dic["ovvV"]
-					ten[n_occ:2*n_act,0:n_occ,n_occ:2*n_act,2*n_act:2*n_orb] = -np.einsum("iabA->aibA",dic["ovvV"],optimize="optimal")
-					ten[0:n_occ,n_occ:2*n_act,2*n_act:2*n_orb,n_occ:2*n_act] = -np.einsum("iabA->iaAb",dic["ovvV"],optimize="optimal")
-					ten[n_occ:2*n_act,0:n_occ,2*n_act:2*n_orb,n_occ:2*n_act] =  np.einsum("iabA->aiAb",dic["ovvV"],optimize="optimal")
-				case "ovVV":
-					ten[0:n_occ,n_occ:2*n_act,2*n_act:2*n_orb,2*n_act:2*n_orb] =  dic["ovVV"]
-					ten[n_occ:2*n_act,0:n_occ,2*n_act:2*n_orb,2*n_act:2*n_orb] = -np.einsum("iaAB->aiAB",dic["ovVV"],optimize="optimal")
-				case "oVoo":
-					ten[0:n_occ,2*n_act:2*n_orb,0:n_occ,0:n_occ] =  dic["oVoo"]
-					ten[2*n_act:2*n_orb,0:n_occ,0:n_occ,0:n_occ] = -np.einsum("iAjk->Aijk",dic["oVoo"],optimize="optimal")
-				case "oVov":
-					ten[0:n_occ,2*n_act:2*n_orb,0:n_occ,n_occ:2*n_act] =  dic["oVov"]
-					ten[2*n_act:2*n_orb,0:n_occ,0:n_occ,n_occ:2*n_act] = -np.einsum("iAja->Aija",dic["oVov"],optimize="optimal")
-					ten[0:n_occ,2*n_act:2*n_orb,n_occ:2*n_act,0:n_occ] = -np.einsum("iAja->iAaj",dic["oVov"],optimize="optimal") 
-					ten[2*n_act:2*n_orb,0:n_occ,n_occ:2*n_act,0:n_occ] =  np.einsum("iAja->Aiaj",dic["oVov"],optimize="optimal") 
-				case "oVoV":
-					ten[0:n_occ,2*n_act:2*n_orb,0:n_occ,2*n_act:2*n_orb] =  dic["oVoV"]
-					ten[2*n_act:2*n_orb,0:n_occ,0:n_occ,2*n_act:2*n_orb] = -np.einsum("iAjB->AijB",dic["oVoV"],optimize="optimal")
-					ten[0:n_occ,2*n_act:2*n_orb,2*n_act:2*n_orb,0:n_occ] = -np.einsum("iAjB->iABj",dic["oVoV"],optimize="optimal")
-					ten[2*n_act:2*n_orb,0:n_occ,2*n_act:2*n_orb,0:n_occ] =  np.einsum("iAjB->AiBj",dic["oVoV"],optimize="optimal")
-				case "oVvv":
-					ten[0:n_occ,2*n_act:2*n_orb,n_occ:2*n_act,n_occ:2*n_act] =  dic["oVvv"]
-					ten[2*n_act:2*n_orb,0:n_occ,n_occ:2*n_act,n_occ:2*n_act] = -np.einsum("iAab->Aiab",dic["oVvv"],optimize="optimal")
-				case "oVvV":
-					ten[0:n_occ,2*n_act:2*n_orb,n_occ:2*n_act,2*n_act:2*n_orb] =  dic["oVvV"]
-					ten[2*n_act:2*n_orb,0:n_occ,n_occ:2*n_act,2*n_act:2*n_orb] = -np.einsum("iAaB->AiaB",dic["oVvV"],optimize="optimal") 
-					ten[0:n_occ,2*n_act:2*n_orb,2*n_act:2*n_orb,n_occ:2*n_act] = -np.einsum("iAaB->iABa",dic["oVvV"],optimize="optimal") 
-					ten[2*n_act:2*n_orb,0:n_occ,2*n_act:2*n_orb,n_occ:2*n_act] =  np.einsum("iAaB->AiBa",dic["oVvV"],optimize="optimal")
-				case "oVVV":
-					ten[0:n_occ,2*n_act:2*n_orb,2*n_act:2*n_orb,2*n_act:2*n_orb] =  dic["oVVV"]
-					ten[2*n_act:2*n_orb,0:n_occ,2*n_act:2*n_orb,2*n_act:2*n_orb] = -np.einsum("iABC->AiBC",dic["oVVV"],optimize="optimal")
-				case "vvoV":
-					ten[n_occ:2*n_act,n_occ:2*n_act,0:n_occ,2*n_act:2*n_orb] =  dic["vvoV"]
-					ten[n_occ:2*n_act,n_occ:2*n_act,2*n_act:2*n_orb,0:n_occ] = -np.einsum("abiA->abAi",dic["vvoV"],optimize="optimal")
-				case "vvvV":
-					ten[n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act,2*n_act:2*n_orb] =  dic["vvvV"]
-					ten[n_occ:2*n_act,n_occ:2*n_act,2*n_act:2*n_orb,n_occ:2*n_act] = -np.einsum("abcA->abAc",dic["vvvV"],optimize="optimal")
-				case "vvVV":
-					ten[n_occ:2*n_act,n_occ:2*n_act,2*n_act:2*n_orb,2*n_act:2*n_orb] =  dic["vvVV"] 
-				case "vVoo":
-					ten[n_occ:2*n_act,2*n_act:2*n_orb,0:n_occ,0:n_occ] =  dic["vVoo"]
-					ten[2*n_act:2*n_orb,n_occ:2*n_act,0:n_occ,0:n_occ] = -np.einsum("aAij->Aaij",dic["vVoo"],optimize="optimal") 
-				case "vVov":
-					ten[n_occ:2*n_act,2*n_act:2*n_orb,0:n_occ,n_occ:2*n_act] =  dic["vVov"]
-					ten[2*n_act:2*n_orb,n_occ:2*n_act,0:n_occ,n_occ:2*n_act] = -np.einsum("aAib->Aaib",dic["vVov"],optimize="optimal")
-					ten[n_occ:2*n_act,2*n_act:2*n_orb,n_occ:2*n_act,0:n_occ] = -np.einsum("aAib->aAbi",dic["vVov"],optimize="optimal")
-					ten[2*n_act:2*n_orb,n_occ:2*n_act,n_occ:2*n_act,0:n_occ] =  np.einsum("aAib->Aabi",dic["vVov"],optimize="optimal")
-				case "vVoV":
-					ten[n_occ:2*n_act,2*n_act:2*n_orb,0:n_occ,2*n_act:2*n_orb] =  dic["vVoV"]
-					ten[2*n_act:2*n_orb,n_occ:2*n_act,0:n_occ,2*n_act:2*n_orb] = -np.einsum("aAiB->AaiB",dic["vVoV"],optimize="optimal")
-					ten[n_occ:2*n_act,2*n_act:2*n_orb,2*n_act:2*n_orb,0:n_occ] = -np.einsum("aAiB->aABi",dic["vVoV"],optimize="optimal")
-					ten[2*n_act:2*n_orb,n_occ:2*n_act,2*n_act:2*n_orb,0:n_occ] =  np.einsum("aAiB->AaBi",dic["vVoV"],optimize="optimal")
-				case "vVvv":
-					ten[n_occ:2*n_act,2*n_act:2*n_orb,n_occ:2*n_act,n_occ:2*n_act] =  dic["vVvv"] 
-					ten[2*n_act:2*n_orb,n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act] = -np.einsum("aAbc->Aabc",dic["vVvv"],optimize="optimal") 
-				case "vVvV":
-					ten[n_occ:2*n_act,2*n_act:2*n_orb,n_occ:2*n_act,2*n_act:2*n_orb] =  dic["vVvV"]
-					ten[2*n_act:2*n_orb,n_occ:2*n_act,n_occ:2*n_act,2*n_act:2*n_orb] = -np.einsum("aAbB->AabB",dic["vVvV"],optimize="optimal")
-					ten[n_occ:2*n_act,2*n_act:2*n_orb,2*n_act:2*n_orb,n_occ:2*n_act] = -np.einsum("aAbB->aABb",dic["vVvV"],optimize="optimal") 
-					ten[2*n_act:2*n_orb,n_occ:2*n_act,2*n_act:2*n_orb,n_occ:2*n_act] =  np.einsum("aAbB->AaBb",dic["vVvV"],optimize="optimal") 
-				case "vVVV":
-					ten[n_occ:2*n_act,2*n_act:2*n_orb,2*n_act:2*n_orb,2*n_act:2*n_orb] =  dic["vVVV"]
-					ten[2*n_act:2*n_orb,n_occ:2*n_act,2*n_act:2*n_orb,2*n_act:2*n_orb] = -np.einsum("aABC->AaBC",dic["vVVV"],optimize="optimal") 
-				case "VVoo":
-					ten[2*n_act:2*n_orb,2*n_act:2*n_orb,0:n_occ,0:n_occ] =  dic["VVoo"]
-				case "VVov":
-					ten[2*n_act:2*n_orb,2*n_act:2*n_orb,0:n_occ,n_occ:2*n_act] =  dic["VVov"] 
-					ten[2*n_act:2*n_orb,2*n_act:2*n_orb,n_occ:2*n_act,0:n_occ] = -np.einsum("ABia->ABai",dic["VVov"],optimize="optimal") 
-				case "VVoV":
-					ten[2*n_act:2*n_orb,2*n_act:2*n_orb,0:n_occ,2*n_act:2*n_orb] =  dic["VVoV"] 
-					ten[2*n_act:2*n_orb,2*n_act:2*n_orb,2*n_act:2*n_orb,0:n_occ] = -np.einsum("ABiC->ABCi",dic["VVoV"],optimize="optimal")
-				case "VVvv":
-					ten[2*n_act:2*n_orb,2*n_act:2*n_orb,n_occ:2*n_act,n_occ:2*n_act] =  dic["VVvv"]
-				case "VVvV":
-					ten[2*n_act:2*n_orb,2*n_act:2*n_orb,n_occ:2*n_act,2*n_act:2*n_orb] =  dic["VVvV"]
-					ten[2*n_act:2*n_orb,2*n_act:2*n_orb,2*n_act:2*n_orb,n_occ:2*n_act] = -np.einsum("ABaC->ABCa",dic["VVvV"],optimize="optimal")
-				case "VVVV":
-					ten[2*n_act:2*n_orb,2*n_act:2*n_orb,2*n_act:2*n_orb,2*n_act:2*n_orb] = dic["VVVV"]
+			if key == "oooo":
+				ten[0:n_occ,0:n_occ,0:n_occ,0:n_occ] = dic["oooo"]
+			elif key == "ooov":
+				ten[0:n_occ,0:n_occ,0:n_occ,n_occ:2*n_act] = dic["ooov"]
+				ten[0:n_occ,0:n_occ,n_occ:2*n_act,0:n_occ] = -np.einsum("ijka->ijak",dic["ooov"],optimize="optimal")
+			elif key == "oovv":
+				ten[0:n_occ,0:n_occ,n_occ:2*n_act,n_occ:2*n_act] = dic["oovv"]
+			elif key == "ovoo":
+				ten[0:n_occ,n_occ:2*n_act,0:n_occ,0:n_occ] = dic["ovoo"]
+				ten[n_occ:2*n_act,0:n_occ,0:n_occ,0:n_occ] = -np.einsum("iajk->aijk",dic["ovoo"],optimize="optimal")
+			elif key == "ovov":
+				ten[0:n_occ,n_occ:2*n_act,0:n_occ,n_occ:2*n_act] =  dic["ovov"]
+				ten[0:n_occ,n_occ:2*n_act,n_occ:2*n_act,0:n_occ] = -np.einsum("iajb->iabj",dic["ovov"],optimize="optimal")
+				ten[n_occ:2*n_act,0:n_occ,0:n_occ,n_occ:2*n_act] = -np.einsum("iajb->aijb",dic["ovov"],optimize="optimal")
+				ten[n_occ:2*n_act,0:n_occ,n_occ:2*n_act,0:n_occ] =  np.einsum("iajb->aibj",dic["ovov"],optimize="optimal")
+			elif key == "ovvv":
+				ten[0:n_occ,n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act] =  dic["ovvv"]
+				ten[n_occ:2*n_act,0:n_occ,n_occ:2*n_act,n_occ:2*n_act] = -np.einsum("iabc->aibc",dic["ovvv"],optimize="optimal") 
+			elif key == "vvoo":
+				ten[n_occ:2*n_act,n_occ:2*n_act,0:n_occ,0:n_occ] =  dic["vvoo"]
+			elif key == "vvov":
+				ten[n_occ:2*n_act,n_occ:2*n_act,0:n_occ,n_occ:2*n_act] =  dic["vvov"]
+				ten[n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act,0:n_occ] = -np.einsum("abic->abci",dic["vvov"],optimize="optimal")
+			elif key == "vvvv":
+				ten[n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act] =  dic["vvvv"]	
+			elif key == "oooV":
+				ten[0:n_occ,0:n_occ,0:n_occ,2*n_act:2*n_orb] =  dic["oooV"]
+				ten[0:n_occ,0:n_occ,2*n_act:2*n_orb,0:n_occ] = -np.einsum("ijkA->ijAk",dic["oooV"],optimize="optimal")
+			elif key == "oovV":
+				ten[0:n_occ,0:n_occ,n_occ:2*n_act,2*n_act:2*n_orb] =  dic["oovV"]
+				ten[0:n_occ,0:n_occ,2*n_act:2*n_orb,n_occ:2*n_act] = -np.einsum("ijaA->ijAa",dic["oovV"],optimize="optimal")
+			elif key == "ooVV":
+				ten[0:n_occ,0:n_occ,2*n_act:2*n_orb,2*n_act:2*n_orb] =  dic["ooVV"]
+			elif key == "ovoV":
+				ten[0:n_occ,n_occ:2*n_act,0:n_occ,2*n_act:2*n_orb] =  dic["ovoV"] 
+				ten[n_occ:2*n_act,0:n_occ,0:n_occ,2*n_act:2*n_orb] = -np.einsum("iajA->aijA",dic["ovoV"],optimize="optimal")
+				ten[0:n_occ,n_occ:2*n_act,2*n_act:2*n_orb,0:n_occ] = -np.einsum("iajA->iaAj",dic["ovoV"],optimize="optimal")
+				ten[n_occ:2*n_act,0:n_occ,2*n_act:2*n_orb,0:n_occ] =  np.einsum("iajA->aiAj",dic["ovoV"],optimize="optimal")
+			elif key == "ovvV":
+				ten[0:n_occ,n_occ:2*n_act,n_occ:2*n_act,2*n_act:2*n_orb] =  dic["ovvV"]
+				ten[n_occ:2*n_act,0:n_occ,n_occ:2*n_act,2*n_act:2*n_orb] = -np.einsum("iabA->aibA",dic["ovvV"],optimize="optimal")
+				ten[0:n_occ,n_occ:2*n_act,2*n_act:2*n_orb,n_occ:2*n_act] = -np.einsum("iabA->iaAb",dic["ovvV"],optimize="optimal")
+				ten[n_occ:2*n_act,0:n_occ,2*n_act:2*n_orb,n_occ:2*n_act] =  np.einsum("iabA->aiAb",dic["ovvV"],optimize="optimal")
+			elif key == "ovVV":
+				ten[0:n_occ,n_occ:2*n_act,2*n_act:2*n_orb,2*n_act:2*n_orb] =  dic["ovVV"]
+				ten[n_occ:2*n_act,0:n_occ,2*n_act:2*n_orb,2*n_act:2*n_orb] = -np.einsum("iaAB->aiAB",dic["ovVV"],optimize="optimal")
+			elif key == "oVoo":
+				ten[0:n_occ,2*n_act:2*n_orb,0:n_occ,0:n_occ] =  dic["oVoo"]
+				ten[2*n_act:2*n_orb,0:n_occ,0:n_occ,0:n_occ] = -np.einsum("iAjk->Aijk",dic["oVoo"],optimize="optimal")
+			elif key == "oVov":
+				ten[0:n_occ,2*n_act:2*n_orb,0:n_occ,n_occ:2*n_act] =  dic["oVov"]
+				ten[2*n_act:2*n_orb,0:n_occ,0:n_occ,n_occ:2*n_act] = -np.einsum("iAja->Aija",dic["oVov"],optimize="optimal")
+				ten[0:n_occ,2*n_act:2*n_orb,n_occ:2*n_act,0:n_occ] = -np.einsum("iAja->iAaj",dic["oVov"],optimize="optimal") 
+				ten[2*n_act:2*n_orb,0:n_occ,n_occ:2*n_act,0:n_occ] =  np.einsum("iAja->Aiaj",dic["oVov"],optimize="optimal") 
+			elif key == "oVoV":
+				ten[0:n_occ,2*n_act:2*n_orb,0:n_occ,2*n_act:2*n_orb] =  dic["oVoV"]
+				ten[2*n_act:2*n_orb,0:n_occ,0:n_occ,2*n_act:2*n_orb] = -np.einsum("iAjB->AijB",dic["oVoV"],optimize="optimal")
+				ten[0:n_occ,2*n_act:2*n_orb,2*n_act:2*n_orb,0:n_occ] = -np.einsum("iAjB->iABj",dic["oVoV"],optimize="optimal")
+				ten[2*n_act:2*n_orb,0:n_occ,2*n_act:2*n_orb,0:n_occ] =  np.einsum("iAjB->AiBj",dic["oVoV"],optimize="optimal")
+			elif key == "oVvv":
+				ten[0:n_occ,2*n_act:2*n_orb,n_occ:2*n_act,n_occ:2*n_act] =  dic["oVvv"]
+				ten[2*n_act:2*n_orb,0:n_occ,n_occ:2*n_act,n_occ:2*n_act] = -np.einsum("iAab->Aiab",dic["oVvv"],optimize="optimal")
+			elif key == "oVvV":
+				ten[0:n_occ,2*n_act:2*n_orb,n_occ:2*n_act,2*n_act:2*n_orb] =  dic["oVvV"]
+				ten[2*n_act:2*n_orb,0:n_occ,n_occ:2*n_act,2*n_act:2*n_orb] = -np.einsum("iAaB->AiaB",dic["oVvV"],optimize="optimal") 
+				ten[0:n_occ,2*n_act:2*n_orb,2*n_act:2*n_orb,n_occ:2*n_act] = -np.einsum("iAaB->iABa",dic["oVvV"],optimize="optimal") 
+				ten[2*n_act:2*n_orb,0:n_occ,2*n_act:2*n_orb,n_occ:2*n_act] =  np.einsum("iAaB->AiBa",dic["oVvV"],optimize="optimal")
+			elif key == "oVVV":
+				ten[0:n_occ,2*n_act:2*n_orb,2*n_act:2*n_orb,2*n_act:2*n_orb] =  dic["oVVV"]
+				ten[2*n_act:2*n_orb,0:n_occ,2*n_act:2*n_orb,2*n_act:2*n_orb] = -np.einsum("iABC->AiBC",dic["oVVV"],optimize="optimal")
+			elif key == "vvoV":
+				ten[n_occ:2*n_act,n_occ:2*n_act,0:n_occ,2*n_act:2*n_orb] =  dic["vvoV"]
+				ten[n_occ:2*n_act,n_occ:2*n_act,2*n_act:2*n_orb,0:n_occ] = -np.einsum("abiA->abAi",dic["vvoV"],optimize="optimal")
+			elif key == "vvvV":
+				ten[n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act,2*n_act:2*n_orb] =  dic["vvvV"]
+				ten[n_occ:2*n_act,n_occ:2*n_act,2*n_act:2*n_orb,n_occ:2*n_act] = -np.einsum("abcA->abAc",dic["vvvV"],optimize="optimal")
+			elif key == "vvVV":
+				ten[n_occ:2*n_act,n_occ:2*n_act,2*n_act:2*n_orb,2*n_act:2*n_orb] =  dic["vvVV"] 
+			elif key == "vVoo":
+				ten[n_occ:2*n_act,2*n_act:2*n_orb,0:n_occ,0:n_occ] =  dic["vVoo"]
+				ten[2*n_act:2*n_orb,n_occ:2*n_act,0:n_occ,0:n_occ] = -np.einsum("aAij->Aaij",dic["vVoo"],optimize="optimal") 
+			elif key == "vVov":
+				ten[n_occ:2*n_act,2*n_act:2*n_orb,0:n_occ,n_occ:2*n_act] =  dic["vVov"]
+				ten[2*n_act:2*n_orb,n_occ:2*n_act,0:n_occ,n_occ:2*n_act] = -np.einsum("aAib->Aaib",dic["vVov"],optimize="optimal")
+				ten[n_occ:2*n_act,2*n_act:2*n_orb,n_occ:2*n_act,0:n_occ] = -np.einsum("aAib->aAbi",dic["vVov"],optimize="optimal")
+				ten[2*n_act:2*n_orb,n_occ:2*n_act,n_occ:2*n_act,0:n_occ] =  np.einsum("aAib->Aabi",dic["vVov"],optimize="optimal")
+			elif key == "vVoV":
+				ten[n_occ:2*n_act,2*n_act:2*n_orb,0:n_occ,2*n_act:2*n_orb] =  dic["vVoV"]
+				ten[2*n_act:2*n_orb,n_occ:2*n_act,0:n_occ,2*n_act:2*n_orb] = -np.einsum("aAiB->AaiB",dic["vVoV"],optimize="optimal")
+				ten[n_occ:2*n_act,2*n_act:2*n_orb,2*n_act:2*n_orb,0:n_occ] = -np.einsum("aAiB->aABi",dic["vVoV"],optimize="optimal")
+				ten[2*n_act:2*n_orb,n_occ:2*n_act,2*n_act:2*n_orb,0:n_occ] =  np.einsum("aAiB->AaBi",dic["vVoV"],optimize="optimal")
+			elif key == "vVvv":
+				ten[n_occ:2*n_act,2*n_act:2*n_orb,n_occ:2*n_act,n_occ:2*n_act] =  dic["vVvv"] 
+				ten[2*n_act:2*n_orb,n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act] = -np.einsum("aAbc->Aabc",dic["vVvv"],optimize="optimal") 
+			elif key == "vVvV":
+				ten[n_occ:2*n_act,2*n_act:2*n_orb,n_occ:2*n_act,2*n_act:2*n_orb] =  dic["vVvV"]
+				ten[2*n_act:2*n_orb,n_occ:2*n_act,n_occ:2*n_act,2*n_act:2*n_orb] = -np.einsum("aAbB->AabB",dic["vVvV"],optimize="optimal")
+				ten[n_occ:2*n_act,2*n_act:2*n_orb,2*n_act:2*n_orb,n_occ:2*n_act] = -np.einsum("aAbB->aABb",dic["vVvV"],optimize="optimal") 
+				ten[2*n_act:2*n_orb,n_occ:2*n_act,2*n_act:2*n_orb,n_occ:2*n_act] =  np.einsum("aAbB->AaBb",dic["vVvV"],optimize="optimal") 
+			elif key == "vVVV":
+				ten[n_occ:2*n_act,2*n_act:2*n_orb,2*n_act:2*n_orb,2*n_act:2*n_orb] =  dic["vVVV"]
+				ten[2*n_act:2*n_orb,n_occ:2*n_act,2*n_act:2*n_orb,2*n_act:2*n_orb] = -np.einsum("aABC->AaBC",dic["vVVV"],optimize="optimal") 
+			elif key == "VVoo":
+				ten[2*n_act:2*n_orb,2*n_act:2*n_orb,0:n_occ,0:n_occ] =  dic["VVoo"]
+			elif key == "VVov":
+				ten[2*n_act:2*n_orb,2*n_act:2*n_orb,0:n_occ,n_occ:2*n_act] =  dic["VVov"] 
+				ten[2*n_act:2*n_orb,2*n_act:2*n_orb,n_occ:2*n_act,0:n_occ] = -np.einsum("ABia->ABai",dic["VVov"],optimize="optimal") 
+			elif key == "VVoV":
+				ten[2*n_act:2*n_orb,2*n_act:2*n_orb,0:n_occ,2*n_act:2*n_orb] =  dic["VVoV"] 
+				ten[2*n_act:2*n_orb,2*n_act:2*n_orb,2*n_act:2*n_orb,0:n_occ] = -np.einsum("ABiC->ABCi",dic["VVoV"],optimize="optimal")
+			elif key == "VVvv":
+				ten[2*n_act:2*n_orb,2*n_act:2*n_orb,n_occ:2*n_act,n_occ:2*n_act] =  dic["VVvv"]
+			elif key == "VVvV":
+				ten[2*n_act:2*n_orb,2*n_act:2*n_orb,n_occ:2*n_act,2*n_act:2*n_orb] =  dic["VVvV"]
+				ten[2*n_act:2*n_orb,2*n_act:2*n_orb,2*n_act:2*n_orb,n_occ:2*n_act] = -np.einsum("ABaC->ABCa",dic["VVvV"],optimize="optimal")
+			elif key == "VVVV":
+				ten[2*n_act:2*n_orb,2*n_act:2*n_orb,2*n_act:2*n_orb,2*n_act:2*n_orb] = dic["VVVV"]
 	else:
 		ten = np.zeros((2*n_act,2*n_act,2*n_act,2*n_act))
 		for key in dic.keys():
-			match key:
-				case "oooo":
-					ten[0:n_occ,0:n_occ,0:n_occ,0:n_occ] = dic["oooo"]
-				case "ooov":
-					ten[0:n_occ,0:n_occ,0:n_occ,n_occ:2*n_act] = dic["ooov"]
-					ten[0:n_occ,0:n_occ,n_occ:2*n_act,0:n_occ] = -np.einsum("ijka->ijak",dic["ooov"],optimize="optimal")
-				case "oovv":
-					ten[0:n_occ,0:n_occ,n_occ:2*n_act,n_occ:2*n_act] = dic["oovv"]
-				case "ovoo":
-					ten[0:n_occ,n_occ:2*n_act,0:n_occ,0:n_occ] = dic["ovoo"]
-					ten[n_occ:2*n_act,0:n_occ,0:n_occ,0:n_occ] = -np.einsum("iajk->aijk",dic["ovoo"],optimize="optimal")
-				case "ovov":
-					ten[0:n_occ,n_occ:2*n_act,0:n_occ,n_occ:2*n_act] =  dic["ovov"]
-					ten[0:n_occ,n_occ:2*n_act,n_occ:2*n_act,0:n_occ] = -np.einsum("iajb->iabj",dic["ovov"],optimize="optimal")
-					ten[n_occ:2*n_act,0:n_occ,0:n_occ,n_occ:2*n_act] = -np.einsum("iajb->aijb",dic["ovov"],optimize="optimal")
-					ten[n_occ:2*n_act,0:n_occ,n_occ:2*n_act,0:n_occ] =  np.einsum("iajb->aibj",dic["ovov"],optimize="optimal")
-				case "ovvv":
-					ten[0:n_occ,n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act] =  dic["ovvv"]
-					ten[n_occ:2*n_act,0:n_occ,n_occ:2*n_act,n_occ:2*n_act] = -np.einsum("iabc->aibc",dic["ovvv"],optimize="optimal") 
-				case "vvoo":
-					ten[n_occ:2*n_act,n_occ:2*n_act,0:n_occ,0:n_occ] =  dic["vvoo"]
-				case "vvov":
-					ten[n_occ:2*n_act,n_occ:2*n_act,0:n_occ,n_occ:2*n_act] =  dic["vvov"]
-					ten[n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act,0:n_occ] = -np.einsum("abic->abci",dic["vvov"],optimize="optimal")
-				case "vvvv":
-					ten[n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act] =  dic["vvvv"]	
+			if key == "oooo":
+				ten[0:n_occ,0:n_occ,0:n_occ,0:n_occ] = dic["oooo"]
+			elif key == "ooov":
+				ten[0:n_occ,0:n_occ,0:n_occ,n_occ:2*n_act] = dic["ooov"]
+				ten[0:n_occ,0:n_occ,n_occ:2*n_act,0:n_occ] = -np.einsum("ijka->ijak",dic["ooov"],optimize="optimal")
+			elif key == "oovv":
+				ten[0:n_occ,0:n_occ,n_occ:2*n_act,n_occ:2*n_act] = dic["oovv"]
+			elif key == "ovoo":
+				ten[0:n_occ,n_occ:2*n_act,0:n_occ,0:n_occ] = dic["ovoo"]
+				ten[n_occ:2*n_act,0:n_occ,0:n_occ,0:n_occ] = -np.einsum("iajk->aijk",dic["ovoo"],optimize="optimal")
+			elif key == "ovov":
+				ten[0:n_occ,n_occ:2*n_act,0:n_occ,n_occ:2*n_act] =  dic["ovov"]
+				ten[0:n_occ,n_occ:2*n_act,n_occ:2*n_act,0:n_occ] = -np.einsum("iajb->iabj",dic["ovov"],optimize="optimal")
+				ten[n_occ:2*n_act,0:n_occ,0:n_occ,n_occ:2*n_act] = -np.einsum("iajb->aijb",dic["ovov"],optimize="optimal")
+				ten[n_occ:2*n_act,0:n_occ,n_occ:2*n_act,0:n_occ] =  np.einsum("iajb->aibj",dic["ovov"],optimize="optimal")
+			elif key == "ovvv":
+				ten[0:n_occ,n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act] =  dic["ovvv"]
+				ten[n_occ:2*n_act,0:n_occ,n_occ:2*n_act,n_occ:2*n_act] = -np.einsum("iabc->aibc",dic["ovvv"],optimize="optimal") 
+			elif key == "vvoo":
+				ten[n_occ:2*n_act,n_occ:2*n_act,0:n_occ,0:n_occ] =  dic["vvoo"]
+			elif key == "vvov":
+				ten[n_occ:2*n_act,n_occ:2*n_act,0:n_occ,n_occ:2*n_act] =  dic["vvov"]
+				ten[n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act,0:n_occ] = -np.einsum("abic->abci",dic["vvov"],optimize="optimal")
+			elif key == "vvvv":
+				ten[n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act,n_occ:2*n_act] =  dic["vvvv"]	
 	return ten 
 
 def three_body_ten2dic(ten,n_occ,n_act):
@@ -1050,89 +1043,88 @@ def three_body_ten2dic(ten,n_occ,n_act):
 def three_body_dic2ten(dic,n_occ,n_act):
 	ten = np.zeros((2*n_act,2*n_act,2*n_act,2*n_act,2*n_act,2*n_act))
 	for key in dic.keys():
-		match key:
-			case "oooooo":
-				ten[0:n_occ,0:n_occ,0:n_occ,0:n_occ,0:n_occ,0:n_occ] =  dic["oooooo"]
-			case "ooooov":
-				ten[0:n_occ,0:n_occ,0:n_occ,0:n_occ,0:n_occ,n_occ:2*n_act] =  dic["ooooov"]
-				ten[0:n_occ,0:n_occ,0:n_occ,0:n_occ,n_occ:2*n_act,0:n_occ] = -np.einsum("ijklma->ijklam",dic["ooooov"],optimize="optimal")
-				ten[0:n_occ,0:n_occ,0:n_occ,n_occ:2*n_act,0:n_occ,0:n_occ] =  np.einsum("ijklma->ijkalm",dic["ooooov"],optimize="optimal")
-			case "oooovv":
-				ten[0:n_occ, 0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] =  dic["oooovv"]
-				ten[0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] = -np.einsum("ijklab->ijkalb",dic["oooovv"],optimize="optimal")
-				ten[0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] =  np.einsum("ijklab->ijkabl",dic["oooovv"],optimize="optimal")
-			case "ooovvv":
-				ten[0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] =  dic["ooovvv"]
-			case "oovooo":
-				ten[0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ] =  dic["oovooo"]
-				ten[0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, 0:n_occ] = -np.einsum("ijaklm->iajklm",dic["oovooo"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, 0:n_occ, 0:n_occ] =  np.einsum("ijaklm->aijklm",dic["oovooo"],optimize="optimal")
-			case "oovoov":
-				ten[0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act] =  dic["oovoov"]
-				ten[0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ] = -np.einsum("ijaklb->ijakbl",dic["oovoov"],optimize="optimal")
-				ten[0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ] =  np.einsum("ijaklb->ijabkl",dic["oovoov"],optimize="optimal")
-				ten[0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act] = -np.einsum("ijaklb->iajklb",dic["oovoov"],optimize="optimal")
-				ten[0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ] =  np.einsum("ijaklb->iajkbl",dic["oovoov"],optimize="optimal")
-				ten[0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ] = -np.einsum("ijaklb->iajbkl",dic["oovoov"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act] =  np.einsum("ijaklb->aijklb",dic["oovoov"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ] = -np.einsum("ijaklb->aijkbl",dic["oovoov"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ] =  np.einsum("ijaklb->aijbkl",dic["oovoov"],optimize="optimal")
-			case "oovovv":
-				ten[0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] =  dic["oovovv"]
-				ten[0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] = -np.einsum("ijakbc->ijabkc",dic["oovovv"],optimize="optimal")
-				ten[0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] =  np.einsum("ijakbc->ijabck",dic["oovovv"],optimize="optimal")
-				ten[0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] = -np.einsum("ijakbc->iajkbc",dic["oovovv"],optimize="optimal")
-				ten[0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] =  np.einsum("ijakbc->iajbkc",dic["oovovv"],optimize="optimal")
-				ten[0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] = -np.einsum("ijakbc->iajbck",dic["oovovv"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] =  np.einsum("ijakbc->aijkbc",dic["oovovv"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] = -np.einsum("ijakbc->aijbkc",dic["oovovv"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] =  np.einsum("ijakbc->aijbck",dic["oovovv"],optimize="optimal")
-			case "oovvvv":
-				ten[0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] =  dic["oovvvv"]
-				ten[0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] = -np.einsum("ijabcd->iajbcd",dic["oovvvv"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] =  np.einsum("ijabcd->aijbcd",dic["oovvvv"],optimize="optimal")
-			case "ovvooo":
-				ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ] =  dic["ovvooo"]
-				ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ] = -np.einsum("iabjkl->aibjkl",dic["ovvooo"],optimize="optimal")
-				ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, 0:n_occ] =  np.einsum("iabjkl->abijkl",dic["ovvooo"],optimize="optimal")
-			case "ovvoov":
-				ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act] =  dic["ovvoov"]
-				ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ] = -np.einsum("iabjkc->iabjck",dic["ovvoov"],optimize="optimal")
-				ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ] =  np.einsum("iabjkc->iabcjk",dic["ovvoov"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act] = -np.einsum("iabjkc->aibjkc",dic["ovvoov"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ] =  np.einsum("iabjkc->aibjck",dic["ovvoov"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ] = -np.einsum("iabjkc->aibcjk",dic["ovvoov"],optimize="optimal")
-				ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act] =  np.einsum("iabjkc->abijkc",dic["ovvoov"],optimize="optimal")
-				ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ] = -np.einsum("iabjkc->abijck",dic["ovvoov"],optimize="optimal")
-				ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ] =  np.einsum("iabjkc->abicjk",dic["ovvoov"],optimize="optimal")
-			case "ovvovv":
-				ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] =  dic["ovvovv"]
-				ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] = -np.einsum("iabjcd->iabcjd",dic["ovvovv"],optimize="optimal")
-				ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] =  np.einsum("iabjcd->iabcdj",dic["ovvovv"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] = -np.einsum("iabjcd->aibjcd",dic["ovvovv"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] =  np.einsum("iabjcd->aibcjd",dic["ovvovv"],optimize="optimal")
-				ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] = -np.einsum("iabjcd->aibcdj",dic["ovvovv"],optimize="optimal")
-				ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] =  np.einsum("iabjcd->abijcd",dic["ovvovv"],optimize="optimal")
-				ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] = -np.einsum("iabjcd->abicjd",dic["ovvovv"],optimize="optimal")
-				ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] =  np.einsum("iabjcd->abicdj",dic["ovvovv"],optimize="optimal")
-			case "ovvvvv":
-				ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] =  dic["ovvvvv"]
-				ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] = -np.einsum("iabcde->aibcde",dic["ovvvvv"],optimize="optimal")
-				ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] =  np.einsum("iabcde->abicde",dic["ovvvvv"],optimize="optimal")
-			case "vvvooo":
-				ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ] =  dic["vvvooo"]
-			case "vvvoov":
-				ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act] =  dic["vvvoov"]
-				ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ] = -np.einsum("abcijd->abcidj",dic["vvvoov"],optimize="optimal")
-				ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ] =  np.einsum("abcijd->abcdij",dic["vvvoov"],optimize="optimal")
-			case "vvvovv":
-				ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] =  dic["vvvovv"]
-				ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] = -np.einsum("abcide->abcdie",dic["vvvovv"],optimize="optimal")
-				ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] =  np.einsum("abcide->abcdei",dic["vvvovv"],optimize="optimal")
-			case "vvvvvv":
-				ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] =  dic["vvvvvv"]
+		if key == "oooooo":
+			ten[0:n_occ,0:n_occ,0:n_occ,0:n_occ,0:n_occ,0:n_occ] =  dic["oooooo"]
+		elif key == "ooooov":
+			ten[0:n_occ,0:n_occ,0:n_occ,0:n_occ,0:n_occ,n_occ:2*n_act] =  dic["ooooov"]
+			ten[0:n_occ,0:n_occ,0:n_occ,0:n_occ,n_occ:2*n_act,0:n_occ] = -np.einsum("ijklma->ijklam",dic["ooooov"],optimize="optimal")
+			ten[0:n_occ,0:n_occ,0:n_occ,n_occ:2*n_act,0:n_occ,0:n_occ] =  np.einsum("ijklma->ijkalm",dic["ooooov"],optimize="optimal")
+		elif key == "oooovv":
+			ten[0:n_occ, 0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] =  dic["oooovv"]
+			ten[0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] = -np.einsum("ijklab->ijkalb",dic["oooovv"],optimize="optimal")
+			ten[0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] =  np.einsum("ijklab->ijkabl",dic["oooovv"],optimize="optimal")
+		elif key == "ooovvv":
+			ten[0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] =  dic["ooovvv"]
+		elif key == "oovooo":
+			ten[0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ] =  dic["oovooo"]
+			ten[0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, 0:n_occ] = -np.einsum("ijaklm->iajklm",dic["oovooo"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, 0:n_occ, 0:n_occ] =  np.einsum("ijaklm->aijklm",dic["oovooo"],optimize="optimal")
+		elif key == "oovoov":
+			ten[0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act] =  dic["oovoov"]
+			ten[0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ] = -np.einsum("ijaklb->ijakbl",dic["oovoov"],optimize="optimal")
+			ten[0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ] =  np.einsum("ijaklb->ijabkl",dic["oovoov"],optimize="optimal")
+			ten[0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act] = -np.einsum("ijaklb->iajklb",dic["oovoov"],optimize="optimal")
+			ten[0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ] =  np.einsum("ijaklb->iajkbl",dic["oovoov"],optimize="optimal")
+			ten[0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ] = -np.einsum("ijaklb->iajbkl",dic["oovoov"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act] =  np.einsum("ijaklb->aijklb",dic["oovoov"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ] = -np.einsum("ijaklb->aijkbl",dic["oovoov"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ] =  np.einsum("ijaklb->aijbkl",dic["oovoov"],optimize="optimal")
+		elif key == "oovovv":
+			ten[0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] =  dic["oovovv"]
+			ten[0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] = -np.einsum("ijakbc->ijabkc",dic["oovovv"],optimize="optimal")
+			ten[0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] =  np.einsum("ijakbc->ijabck",dic["oovovv"],optimize="optimal")
+			ten[0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] = -np.einsum("ijakbc->iajkbc",dic["oovovv"],optimize="optimal")
+			ten[0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] =  np.einsum("ijakbc->iajbkc",dic["oovovv"],optimize="optimal")
+			ten[0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] = -np.einsum("ijakbc->iajbck",dic["oovovv"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] =  np.einsum("ijakbc->aijkbc",dic["oovovv"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] = -np.einsum("ijakbc->aijbkc",dic["oovovv"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] =  np.einsum("ijakbc->aijbck",dic["oovovv"],optimize="optimal")
+		elif key == "oovvvv":
+			ten[0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] =  dic["oovvvv"]
+			ten[0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] = -np.einsum("ijabcd->iajbcd",dic["oovvvv"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] =  np.einsum("ijabcd->aijbcd",dic["oovvvv"],optimize="optimal")
+		elif key == "ovvooo":
+			ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ] =  dic["ovvooo"]
+			ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ] = -np.einsum("iabjkl->aibjkl",dic["ovvooo"],optimize="optimal")
+			ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, 0:n_occ] =  np.einsum("iabjkl->abijkl",dic["ovvooo"],optimize="optimal")
+		elif key == "ovvoov":
+			ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act] =  dic["ovvoov"]
+			ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ] = -np.einsum("iabjkc->iabjck",dic["ovvoov"],optimize="optimal")
+			ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ] =  np.einsum("iabjkc->iabcjk",dic["ovvoov"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act] = -np.einsum("iabjkc->aibjkc",dic["ovvoov"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ] =  np.einsum("iabjkc->aibjck",dic["ovvoov"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ] = -np.einsum("iabjkc->aibcjk",dic["ovvoov"],optimize="optimal")
+			ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ, n_occ:2*n_act] =  np.einsum("iabjkc->abijkc",dic["ovvoov"],optimize="optimal")
+			ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, 0:n_occ] = -np.einsum("iabjkc->abijck",dic["ovvoov"],optimize="optimal")
+			ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, 0:n_occ] =  np.einsum("iabjkc->abicjk",dic["ovvoov"],optimize="optimal")
+		elif key == "ovvovv":
+			ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] =  dic["ovvovv"]
+			ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] = -np.einsum("iabjcd->iabcjd",dic["ovvovv"],optimize="optimal")
+			ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] =  np.einsum("iabjcd->iabcdj",dic["ovvovv"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] = -np.einsum("iabjcd->aibjcd",dic["ovvovv"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] =  np.einsum("iabjcd->aibcjd",dic["ovvovv"],optimize="optimal")
+			ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] = -np.einsum("iabjcd->aibcdj",dic["ovvovv"],optimize="optimal")
+			ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] =  np.einsum("iabjcd->abijcd",dic["ovvovv"],optimize="optimal")
+			ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] = -np.einsum("iabjcd->abicjd",dic["ovvovv"],optimize="optimal")
+			ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] =  np.einsum("iabjcd->abicdj",dic["ovvovv"],optimize="optimal")
+		elif key == "ovvvvv":
+			ten[0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] =  dic["ovvvvv"]
+			ten[n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] = -np.einsum("iabcde->aibcde",dic["ovvvvv"],optimize="optimal")
+			ten[n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] =  np.einsum("iabcde->abicde",dic["ovvvvv"],optimize="optimal")
+		elif key == "vvvooo":
+			ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, 0:n_occ] =  dic["vvvooo"]
+		elif key == "vvvoov":
+			ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ, n_occ:2*n_act] =  dic["vvvoov"]
+			ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, 0:n_occ] = -np.einsum("abcijd->abcidj",dic["vvvoov"],optimize="optimal")
+			ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, 0:n_occ] =  np.einsum("abcijd->abcdij",dic["vvvoov"],optimize="optimal")
+		elif key == "vvvovv":
+			ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act, n_occ:2*n_act] =  dic["vvvovv"]
+			ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ, n_occ:2*n_act] = -np.einsum("abcide->abcdie",dic["vvvovv"],optimize="optimal")
+			ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, 0:n_occ] =  np.einsum("abcide->abcdei",dic["vvvovv"],optimize="optimal")
+		elif key == "vvvvvv":
+			ten[n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act, n_occ:2*n_act] =  dic["vvvvvv"]
 	return ten
-"""
+
 def t1_mat2dic(t1_amps,n_a,n_act,n_orb):
 	n_virt_int_a = n_act - n_a 
 	n_virt_ext_a = n_orb - n_act  
