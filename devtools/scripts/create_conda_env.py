@@ -1,5 +1,3 @@
-"""
-
 import argparse
 import os
 import re
@@ -95,5 +93,3 @@ with temp_cd():
     with open(temp_file_name, 'w') as f:
         f.write(yaml.dump(yaml_script))
     sp.call("{} env create -n {} -f {}".format(conda_path, args.name, temp_file_name), shell=True)
-
-"""

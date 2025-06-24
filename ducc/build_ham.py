@@ -397,3 +397,134 @@ def get_ducc_integrals(
 
 
     return a4_3_ham
+
+
+def get_ducc_ham_active_space(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_orb,n_occ,n_act,
+    inc_3_body,):
+    constant = 0
+    one_body = np.zeros((2 * n_act, 2 * n_act))
+    two_body = np.zeros((2 * n_act, 2 * n_act, 2 * n_act, 2 * n_act))
+    three_body = 0
+    if(inc_3_body):
+        three_body = np.zeros((2 * n_act, 2 * n_act, 2 * n_act, 2 * n_act, 2 * n_act, 2 * n_act))
+    
+    fdic = ducc.one_body_mat2dic(fmat,n_occ,n_act,n_orb)
+    vdic = ducc.two_body_ten2dic(vten,n_occ,n_act,n_orb)
+    t1dic = ducc.t1_mat2dic(t1_amps,n_a,n_act,n_orb)
+    t2dic = ducc.t2_ten2dic(t2_amps,n_a,n_act,n_orb)
+
+    fn_s1_dic = ducc.fn_s1(fdic,t1dic)
+    one_body += ducc.one_body_dic2mat(fn_s1_dic,n_occ,n_act,n_act)
+    constant += fn_s1_dic['c']
+
+    fn_s2_dic = ducc.fn_s2(fdic,t2dic)
+    one_body += ducc.one_body_dic2mat(fn_s2_dic,n_occ,n_act,n_act)
+    two_body += ducc.two_body_dic2ten(fn_s2_dic,n_occ,n_act,n_act)
+
+    wn_s1_dic = ducc.wn_s1(vdic,t1dic)
+    one_body += 0.250 * ducc.one_body_dic2mat(wn_s1_dic,n_occ,n_act,n_act)
+    two_body += 0.250 * ducc.two_body_dic2ten(wn_s1_dic,n_occ,n_act,n_act)
+
+    wn_s2_dic = ducc.wn_s2(vdic,t2dic,inc_3_body)
+    constant += 0.250 * wn_s2_dic["c"]
+    one_body += 0.250 * ducc.one_body_dic2mat(wn_s2_dic,n_occ,n_act,n_act)
+    two_body += 0.250 * ducc.two_body_dic2ten(wn_s2_dic,n_occ,n_act,n_act)
+    if(inc_3_body):
+        three_body += 0.250 * ducc.three_body_dic2ten(wn_s2_dic,n_occ,n_act)
+
+    fn_s1_s1_dic = ducc.fn_s1_s1(fdic,t1dic)
+    constant += 0.500 * fn_s1_s1_dic['c']
+    one_body += 0.500 * ducc.one_body_dic2mat(fn_s1_s1_dic,n_occ,n_act,n_act)
+
+    fn_s1_s2_dic = ducc.fn_s1_s2(fdic,t1dic,t2dic)
+    one_body += 0.500 *ducc.one_body_dic2mat(fn_s1_s2_dic,n_occ,n_act,n_act)
+    two_body += 0.500 *ducc.two_body_dic2ten(fn_s1_s2_dic,n_occ,n_act,n_act)
+
+    fn_s2_s1_dic = ducc.fn_s2_s1(fdic,t1dic,t2dic)
+    constant += 0.500 * fn_s2_s1_dic['c']
+    one_body += 0.500 * ducc.one_body_dic2mat(fn_s2_s1_dic,n_occ,n_act,n_act)
+    two_body += 0.500 * ducc.two_body_dic2ten(fn_s2_s1_dic,n_occ,n_act,n_act)
+
+    fn_s2_s2_dic = ducc.fn_s2_s2(fdic,t2dic,inc_3_body)
+    constant += 0.500 * fn_s2_s2_dic['c']
+    one_body += 0.500 * ducc.one_body_dic2mat(fn_s2_s2_dic,n_occ,n_act,n_act)
+    two_body += 0.500 * ducc.two_body_dic2ten(fn_s2_s2_dic,n_occ,n_act,n_act)
+    if(inc_3_body):
+        three_body += 0.500 * ducc.three_body_dic2ten(fn_s2_s2_dic,n_occ,n_act)
+
+    constant_op = of.FermionOperator("", float(constant))
+
+    one_body += fmat[0:2*n_act,0:2*n_act]
+    one_body_op = normal_ordered(ducc.one_body_to_op(one_body, n_occ, n_act))
+
+    two_body += 0.250 * vten[0:2*n_act,0:2*n_act,0:2*n_act,0:2*n_act]  
+    two_body_op = normal_ordered(ducc.two_body_to_op(two_body, n_occ, n_act))
+    
+    ducc_ham = constant_op + one_body_op + two_body_op
+
+    if(inc_3_body):
+        three_body_op = normal_ordered(ducc.three_body_to_op(three_body, n_occ, n_act))
+        ducc_ham += three_body_op
+
+    return ducc_ham
+
+
+
+def get_ducc_ham_active_space_pyscf(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_orb,n_occ,n_act,
+    inc_3_body,):
+    constant = 0
+    one_body = np.zeros((2 * n_act, 2 * n_act))
+    two_body = np.zeros((2 * n_act, 2 * n_act, 2 * n_act, 2 * n_act))
+    three_body = 0
+    if(inc_3_body):
+        three_body = np.zeros((2 * n_act, 2 * n_act, 2 * n_act, 2 * n_act, 2 * n_act, 2 * n_act))
+    
+    fdic = ducc.one_body_mat2dic(fmat,n_occ,n_act,n_orb)
+    vdic = ducc.two_body_ten2dic(vten,n_occ,n_act,n_orb)
+    t1dic = ducc.t1_mat2dic(t1_amps,n_a,n_act,n_orb)
+    t2dic = ducc.t2_ten2dic(t2_amps,n_a,n_act,n_orb)
+
+    fn_s1_dic = ducc.fn_s1(fdic,t1dic)
+    one_body += ducc.one_body_dic2mat(fn_s1_dic,n_occ,n_act,n_act)
+    constant += fn_s1_dic['c']
+
+    fn_s2_dic = ducc.fn_s2(fdic,t2dic)
+    one_body += ducc.one_body_dic2mat(fn_s2_dic,n_occ,n_act,n_act)
+    two_body += ducc.two_body_dic2ten(fn_s2_dic,n_occ,n_act,n_act)
+
+    wn_s1_dic = ducc.wn_s1(vdic,t1dic)
+    one_body += ducc.one_body_dic2mat(wn_s1_dic,n_occ,n_act,n_act)
+    two_body += ducc.two_body_dic2ten(wn_s1_dic,n_occ,n_act,n_act)
+
+    wn_s2_dic = ducc.wn_s2(vdic,t2dic,inc_3_body)
+    constant += wn_s2_dic["c"]
+    one_body += ducc.one_body_dic2mat(wn_s2_dic,n_occ,n_act,n_act)
+    two_body += ducc.two_body_dic2ten(wn_s2_dic,n_occ,n_act,n_act)
+    if(inc_3_body):
+        three_body += ducc.three_body_dic2ten(wn_s2_dic,n_occ,n_act)
+
+    fn_s1_s1_dic = ducc.fn_s1_s1(fdic,t1dic)
+    constant += 0.500 * fn_s1_s1_dic['c']
+    one_body += 0.500 * ducc.one_body_dic2mat(fn_s1_s1_dic,n_occ,n_act,n_act)
+
+    fn_s1_s2_dic = ducc.fn_s1_s2(fdic,t1dic,t2dic)
+    one_body += 0.500 *ducc.one_body_dic2mat(fn_s1_s2_dic,n_occ,n_act,n_act)
+    two_body += 0.500 *ducc.two_body_dic2ten(fn_s1_s2_dic,n_occ,n_act,n_act)
+
+    fn_s2_s1_dic = ducc.fn_s2_s1(fdic,t1dic,t2dic)
+    constant += 0.500 * fn_s2_s1_dic['c']
+    one_body += 0.500 * ducc.one_body_dic2mat(fn_s2_s1_dic,n_occ,n_act,n_act)
+    two_body += 0.500 * ducc.two_body_dic2ten(fn_s2_s1_dic,n_occ,n_act,n_act)
+
+    fn_s2_s2_dic = ducc.fn_s2_s2(fdic,t2dic,inc_3_body)
+    constant += 0.500 * fn_s2_s2_dic['c']
+    one_body += 0.500 * ducc.one_body_dic2mat(fn_s2_s2_dic,n_occ,n_act,n_act)
+    two_body += 0.500 * ducc.two_body_dic2ten(fn_s2_s2_dic,n_occ,n_act,n_act)
+    if(inc_3_body):
+        three_body += 0.500 * ducc.three_body_dic2ten(fn_s2_s2_dic,n_occ,n_act)
+
+
+    one_body += fmat[0:2*n_act,0:2*n_act]
+    two_body += vten[0:2*n_act,0:2*n_act,0:2*n_act,0:2*n_act]  
+
+    return constant, one_body, two_body, three_body

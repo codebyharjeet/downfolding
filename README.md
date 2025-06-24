@@ -1,24 +1,19 @@
+downfolding
+==============================
+[//]: # (Badges)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Actions Build Status](https://github.com/codebyharjeet/downfolding/workflows/CI/badge.svg)](https://github.com/codebyharjeet/downfolding/actions?query=workflow%3ACI)
+[![codecov](https://codecov.io/gh/codebyharjeet/downfolding/branch/main/graph/badge.svg)](https://codecov.io/gh/codebyharjeet/downfolding/branch/main)
 
-# DUCC
 
-A python package to run double unitary coupled cluster (DUCC) calculations.
+Code for DUCC
+
+### Copyright
+
+Copyright (c) 2025, Harjeet Singh
 
 
-### Installation
-1. Download
-
-        git clone https://github.com/codebyharjeet/DUCC.git
-        cd DUCC
-
-2. Create conda environment
-
-        conda create --name ducc_env "python=3.7.12"
-        conda activate ducc_env
-
-3. To do the installation in development mode
-
-        pip install -e .
-
-4. Try running tests to make sure it is working
-
-        pytest -v
+#### Acknowledgements
+ 
+Project based on the 
+[Computational Molecular Science Python Cookiecutter](https://github.com/molssi/cookiecutter-cms) version 1.11.

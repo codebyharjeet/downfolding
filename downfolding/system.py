@@ -1,0 +1,54 @@
+
+
+class System():
+    """
+    An system object.
+
+    Attributes
+    ----------
+    eref : float
+        the energy of the reference wave function (including nuclear repulsion contribution)
+    nfzc : int
+        the number of frozen core orbitals
+    no : int
+        the number of active occupied orbitals
+    nv : int
+        the number of active virtual orbitals
+    nmo : int
+        the number of active orbitals
+    H : Hamiltonian object
+        the normal-ordered Hamiltonian, which includes the Fock matrix, the ERIs, the spin-adapted ERIs (L), and various property integrals
+    o : NumPy slice
+        occupied orbital subspace
+    v : NumPy slice
+        virtual orbital subspace
+
+    Methods
+    -------
+
+    """
+
+    def __init__(
+        self,
+        mf,
+        nelectrons,
+        n_a,
+        n_b,
+        norbitals,
+        nqubits,
+        nfrozen,
+        nuclear_repulsion=0.0,
+        mo_energies=None,
+        mo_occupation=None,
+    ):
+        # basic information
+        self.meanfield = mf 
+        self.nelectrons = nelectrons
+        self.n_a = n_a
+        self.n_b = n_b
+        self.norbitals = norbitals
+        self.nqubits = nqubits 
+        self.nfrozen = nfrozen
+        self.nuclear_repulsion = nuclear_repulsion
+        self.mo_energies = mo_energies
+        self.mo_occupation = mo_occupation

@@ -190,6 +190,7 @@ def init(
     basis,
     reference="rhf",
     n_frzn_occ=0,
+    do_fci=False,
     n_act=None,
     mo_order=None,
 ):
@@ -226,7 +227,8 @@ def init(
         mf = scf.UHF(mol)
     else:
         print("Please specify a proper reference (rhf/rohf/uhf).")
-    mf.conv_tol_grad = 1e-14
+    mf.conv_tol = 1e-12
+    #mf.conv_tol_grad = 1e-14
     mf.max_cycle = 1000
     mf.verbose = 4
     mf.init_guess = "atom"
@@ -378,7 +380,7 @@ def init(
     g = np.kron(I_aa, AA) + np.kron(I_ab, AB) + np.kron(I_ba, BA) + np.kron(I_bb, BB)
 
     # FCI
-    if False:
+    if(do_fci):
         cisolver = fci.FCI(mf)
         print("FCI energy = %21.15f" % cisolver.kernel()[0])
 

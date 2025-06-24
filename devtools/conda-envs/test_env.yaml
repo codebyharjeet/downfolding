@@ -1,24 +1,11 @@
-"""
-
 name: test
 channels:
 
-  - conda-forge
-
   - defaults
-
 dependencies:
     # Base depends
   - python
   - pip
-
-    # Package depends
-  - numpy
-  - scipy
-  - pyscf
-  - openfermion
-
-
 
     # Testing
   - pytest
@@ -29,4 +16,3 @@ dependencies:
   #- pip:
   #  - codecov
 
-"""

@@ -38,7 +38,7 @@ t2dic = ducc.t2_ten2dic(t2_amps,n_a,n_act,n_orb)
 s2_op = ducc.t2_to_op(t2_amps)
 
 
-"""
+#"""
 # Test [Fn,S1]
 print("Test [Fn,S1]")
 fn_s1_dic = ducc.fn_s1(fdic,t1dic)
@@ -270,4 +270,4 @@ print(terms[1])
 print(terms[2])
 print("diff")
 #print(fn_s2_s1_s1_op_test-fn_s2_s1_s1_op)
-"""
+#"""

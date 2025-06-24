@@ -5,20 +5,20 @@ build-backend = "setuptools.build_meta"
 # Self-descriptive entries which should always be present
 # https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
 [project]
-name = "ducc"
-description = "A python package to run double unitary coupled cluster (DUCC) calculations."
+name = "downfolding"
+description = "Code for DUCC"
 dynamic = ["version"]
 readme = "README.md"
 authors = [
-    { name = "harjeet", email = "harjeetsingh@vt.edu" }
+    { name = "Harjeet Singh", email = "harjeetsingh@vt.edu" }
 ]
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 # See https://pypi.org/classifiers/
 classifiers = [
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 # Declare any run-time dependencies that should be installed with the package.
 #dependencies = [
 #    "importlib-resources;python_version<'3.10'",
@@ -26,13 +26,12 @@ requires-python = ">=3.7"
 
 # Update the urls once the hosting is set up.
 #[project.urls]
-#"Source" = "https://github.com/<username>/ducc/"
-#"Documentation" = "https://ducc.readthedocs.io/"
+#"Source" = "https://github.com/codebyharjeet/downfolding/"
+#"Documentation" = "https://downfolding.readthedocs.io/"
 
 [project.optional-dependencies]
 test = [
   "pytest>=6.1.2",
-  "pytest-runner"
 ]
 
 [tool.setuptools]
@@ -62,7 +61,7 @@ where = ["."]
 
 # Ref https://setuptools.pypa.io/en/latest/userguide/datafiles.html#package-data
 [tool.setuptools.package-data]
-ducc = [
+downfolding = [
     "py.typed"
 ]
 
@@ -82,4 +81,4 @@ match = ["*"]
 default-tag = "1.0.0"
 
 [tool.versioningit.write]
-file = "ducc/_version.py"
+file = "downfolding/_version.py"

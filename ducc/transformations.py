@@ -1,7 +1,5 @@
 import ducc
 import scipy
-#import vqe_methods
-#import pyscf_helper
 
 import pyscf
 from pyscf import lib
@@ -10,7 +8,6 @@ from pyscf.cc import ccsd
 
 import openfermion as of
 from openfermion import *
-#from tVQE import *
 
 import numpy as np
 import copy as cp
@@ -1261,6 +1258,7 @@ def get_many_body_terms(operator):
 	one_body = of.FermionOperator()
 	two_body = of.FermionOperator()
 	three_body = of.FermionOperator()
+	four_body = of.FermionOperator()
 	terms = operator.terms 
 	for term in terms:
 		if(len(term) == 0):
@@ -1271,13 +1269,15 @@ def get_many_body_terms(operator):
 			two_body += of.FermionOperator(term,terms.get(term))
 		elif(len(term) == 6):
 			three_body += of.FermionOperator(term,terms.get(term))
+		elif(len(term) == 8):
+			four_body += of.FermionOperator(term,terms.get(term))
 		else:
 			print("Unexpected number of terms: %d"%len(term))
-	return(constant,one_body,two_body,three_body)
+	return(constant,one_body,two_body,three_body,four_body)
 
 def as_proj(operator,act_max):
 	proj_op = of.FermionOperator()
-	const, one_body, two_body, three_body = get_many_body_terms(operator)
+	const, one_body, two_body, three_body, four_body = get_many_body_terms(operator)
 	# constant terms
 	proj_op += const 
 	# one-body terms
@@ -1304,5 +1304,19 @@ def as_proj(operator,act_max):
 						if(term[4][0] < act_max):
 							if(term[5][0] < act_max):
 								proj_op += of.FermionOperator(term,terms3.get(term))
+
+	# four-body terms
+	terms4 = four_body.terms  
+	for term in terms4:
+		if(term[0][0] < act_max):
+			if(term[1][0] < act_max):
+				if(term[2][0] < act_max):
+					if (term[3][0] < act_max):
+						if(term[4][0] < act_max):
+							if(term[5][0] < act_max):
+								if(term[6][0] < act_max):
+									if(term[7][0] < act_max):
+										proj_op += of.FermionOperator(term,terms4.get(term))
+
 	return proj_op
 

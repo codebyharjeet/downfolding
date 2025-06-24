@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=ducc
+set SPHINXPROJ=downfolding
 
 if "%1" == "" goto help
 

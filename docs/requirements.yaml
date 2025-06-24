@@ -1,12 +1,22 @@
-name: docs
+name: docs_downfolding
 channels:
+
+  - conda-forge
+
+  - defaults
 dependencies:
     # Base depends
   - python
   - pip
+  
+  - pydata-sphinx-theme
+  - sphinx-design
+  - sphinx-copybutton
+
 
 
 
     # Pip-only installs
-  #- pip:
+  - pip:
+    - -e ../
 
