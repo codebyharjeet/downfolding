@@ -68,6 +68,7 @@ def get_memory_usage():
     >> # you can calculate percentage of available memory
     >> psutil.virtual_memory().available * 100 / psutil.virtual_memory().total
     >> 20.
+    print(eri_so.shape, " %12.8f Mb" %(eri_so.nbytes*1e-6))
     """
     import psutil
     current_process = psutil.Process(os.getpid())

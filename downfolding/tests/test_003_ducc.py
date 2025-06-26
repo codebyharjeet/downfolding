@@ -12,10 +12,13 @@ def test_Driver():
         spin=0,
     )
     mf = scf.RHF(mol)
-    mf.kernel()
+    mf.kernel(verbose=0)
     driver = Driver.from_pyscf(mf, nfrozen=0)
 
     driver.run_ducc(n_act=5, approximation="a7", three_body=False, four_body=False)
 
+    driver.exact_diagonalize(backend="pyscf")
+
+    driver.exact_diagonalize(backend="openfermion")
     
 test_Driver()

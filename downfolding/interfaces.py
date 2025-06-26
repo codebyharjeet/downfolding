@@ -111,8 +111,6 @@ def load_pyscf_integrals(meanfield, n_frzn_occ=0,n_act=None, dm0=None, stability
               np.kron(eri_ba, BA) +
               np.kron(eri_bb, BB))
     
-    print(eri_so.shape, " %12.8f Mb" %(eri_so.nbytes*1e-6))
-
     hamiltonian = Hamiltonian.from_physical_vacuum(h, eri_so, n_a, n_b, n_orb)
     system = System(
         meanfield,

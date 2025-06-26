@@ -55,7 +55,9 @@ class System():
     
 
     def print(self):
-        print("\nSystem and Method:")
+        print("\n   HF Calculation Summary")
+        print("   -------------------------------------")
+        print("System and Method:")
         mol = self.meanfield.mol 
         print(mol.atom)
         print("Basis set                                      :%12s" %(mol.basis))

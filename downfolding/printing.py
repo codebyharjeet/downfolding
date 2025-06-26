@@ -58,3 +58,16 @@ def tprint(tens,thresh=1e-15):
 	else:
 		print("TODO: implement a printing for a %dD tensor."%(np.ndim(tens)))
 		exit()
+
+def ccsd_summary(ccsd_tot, ccsd_corr):
+    print("\n   CCSD Calculation Summary")
+    print("   -------------------------------------")
+    print(f"CCSD Total Energy                              :%18.12f"%(ccsd_tot))
+    print(f"CCSD Correlation Energy                        :%18.12f"%(ccsd_corr))    
+
+# def ducc_summary():
+#     print("\n   DUCC Calculation Summary")
+#     print("   -------------------------------------")
+#     print("Size of the active space                       :%10i" %(n_act))
+#     print(f"CCSD Total Energy                              :%21.12f"%(mccsd.e_tot))
+#     print(f"CCSD Correlation Energy                        :%21.12f"%(ccsd_energy))  

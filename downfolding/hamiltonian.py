@@ -6,6 +6,7 @@ from enum import Enum, auto
 from functools import lru_cache
 from typing import Dict
 from downfolding.helper import one_body_mat2dic, two_body_ten2dic, one_body_to_op, two_body_to_op
+from downfolding.printing import ccsd_summary
 import openfermion as of 
 from openfermion import *
 from opt_einsum import contract
@@ -83,9 +84,15 @@ class Hamiltonian:
 
     @classmethod
     def from_physical_vacuum(cls, h: Array, v: Array, n_a: int, n_b: int, n_orb: int, constant: float = 0.0, *, n_act: int | None = None, w: Array | None = None, x: Array | None = None,) -> Hamiltonian:
-        # convert physical vacuum(h, v) to fermi vacuum (f, v)
-        f, v_fv = cls.move_to_fermi_vacuum(h, v, n_a, n_b, n_orb)
-        return cls(f, v_fv, n_a, n_b, n_orb,constant,n_act=n_act, w=w, x=x)
+        """
+        Convert physical vacuum(h, v) to fermi vacuum (f, v)
+        f_{pq} = h_{pq} + \sum_{i \in occ} <pi||qi>
+        v^{pq}_{rs} = <pq||rs>
+        """
+        o = slice(None, n_a+n_b)        
+        v_fv = contract('prqs', v) - contract('psqr', v)
+        f = h + contract('piqi->pq', v_fv[:, o, :, o])
+        return cls(f, 0.25*v_fv, n_a, n_b, n_orb,constant,n_act=n_act, w=w, x=x)
     
     def _as_spatorb_pv(self):
         return self.export_pyscf()
@@ -125,17 +132,6 @@ class Hamiltonian:
     def __repr__(self):
         n_so = self._f.shape[0]
         return f"<Hamiltonian | {n_so} spin orbitals>"
-
-    @staticmethod
-    def move_to_fermi_vacuum(h: Array, v_pv: Array, n_a, n_b, n_orb) -> tuple[Array,Array]:
-        """
-        f_{pq} = h_{pq} + \sum_{i \in occ} <pi||qi>
-        v^{pq}_{rs} = <pq||rs>
-        """
-        o = slice(None, n_a+n_b)        
-        v = contract('prqs', v_pv) - contract('psqr', v_pv)
-        f = h + contract('piqi->pq', v[:, o, :, o])
-        return f, 0.25*v 
 
     def export_pyscf(self):
         # Move back to physical vacuum 

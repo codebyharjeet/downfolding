@@ -7,6 +7,7 @@ from pyscf.cc import ccsd
 from downfolding.hamiltonian import HamFormat, Hamiltonian
 from downfolding.ccsd import calc_ccsd
 from downfolding.helper import asym_term, one_body_mat2dic, one_body_dic2mat, two_body_ten2dic, two_body_dic2ten, three_body_ten2dic, three_body_dic2ten, four_body_ten2dic, four_body_dic2ten, t1_mat2dic, t2_ten2dic, get_many_body_terms, as_proj, t1_to_op, t2_to_op, t1_to_ext, t2_to_ext
+from downfolding.printing import ccsd_summary
 import time 
 from opt_einsum import contract
 
@@ -3720,23 +3721,28 @@ def eff_ham_a7(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=False,four_bod
 
 
 def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: bool = False, four_body: bool  = False,):
-    t0 = time.perf_counter()
     mccsd = cc.UCCSD(system.meanfield)
     # mccsd.conv_tol = 1e-12
     # mccsd.conv_tol_normt = 1e-10
     mccsd.max_cycle = 1000
     mccsd.verbose = 0
     mccsd.kernel()
+
     t1_amps = np.array(mccsd.t1)
     t2_amps = np.array(mccsd.t2)
 
     fmat, vten = H._f, H._v 
     ccsd_energy = calc_ccsd(fmat, vten, t1_amps, t2_amps, verbose=0)
     assert np.isclose(ccsd_energy+system.meanfield.e_tot, mccsd.e_tot, rtol=0.0, atol=1e-8)
+    ccsd_summary(mccsd.e_tot, ccsd_energy)
+
+    print("\n   DUCC Calculation Summary")
+    print("   -------------------------------------")
+    print("Size of the active space                       :%10i" %(n_act))
 
     n_a = system.n_a
     n_b = system.n_b 
-
+    t0 = time.perf_counter()
     key = approximation.strip().lower()
     if key == "a1":
         ham = eff_ham_a1(fmat,vten,n_a,n_b,n_act)    
@@ -3755,26 +3761,9 @@ def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: boo
     else:
         raise ValueError(f"Unsupported DUCC method {key!r}; choose between 'A1' to 'A7'.")
 
-    print("\n   DUCC Calculation Summary")
-    print("   -------------------------------------")
-    print("Size of the active space                       :%10i" %(n_act))
-    print(f"CCSD Total Energy                              :%21.12f"%(mccsd.e_tot))
-    print(f"CCSD Correlation Energy                        :%21.12f"%(ccsd_energy))
-    use_pyscf = True    
-    if use_pyscf:
-        constant, h, g = ham(HamFormat.SPATORB_PV)
-        p = fci.direct_nosym.FCISolver()
-        e, fcivec = p.kernel(h, g, n_act, (n_a,n_b), max_space=450, nroots=1, verbose=0)
-        print(f"DUCC_{key.upper()} Full CI PySCF                          :%21.12f"%(e+constant))
-
-    use_openfermion = True  
-    if use_openfermion:
-        ham_mat = ham(HamFormat.HILBERT)
-        evals, evecs = scipy.sparse.linalg.eigsh(ham_mat, k=1, which="SA")
-        print(f"DUCC_{key.upper()} Full CI OpenFermion                    :%21.12f"%(evals[0]))
-
+    print(f"DUCC {key.upper()} hamiltonian constructed!")
     dt = time.perf_counter() - t0
     m, s = divmod(dt, 60)
     print("DUCC wall time                                 :%11.2f m  %3.2f s" % (m, s))
 
-    return e+constant
+    return ham 
