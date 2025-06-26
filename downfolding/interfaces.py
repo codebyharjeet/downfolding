@@ -44,12 +44,6 @@ def load_pyscf_integrals(meanfield, n_frzn_occ=0,n_act=None, dm0=None, stability
     system: System object
     """
     time_init = time.time()
-    print(" ---------------------------------------------------------")
-    print("                                                          ")
-    print("                      Using Pyscf:")
-    print("                                                          ")
-    print(" ---------------------------------------------------------")
-    print("                                                          ")
     mol = meanfield.mol
 
     n_orb = mol.nao_nr()
@@ -135,7 +129,7 @@ def load_pyscf_integrals(meanfield, n_frzn_occ=0,n_act=None, dm0=None, stability
 
     print(eri_so.shape, " %12.8f Mb" %(eri_so.nbytes*1e-6))
 
-    hamiltonian = Hamiltonian(h, eri_so, n_a, n_b, n_orb)
+    hamiltonian = Hamiltonian.from_physical_vacuum(h, eri_so, n_a, n_b, n_orb)
     system = System(
         meanfield,
         n_el,

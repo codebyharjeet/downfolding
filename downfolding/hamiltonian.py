@@ -8,12 +8,15 @@ from typing import Dict
 from downfolding.helper import one_body_mat2dic, two_body_ten2dic, one_body_to_op, two_body_to_op
 import openfermion as of 
 from openfermion import *
+from opt_einsum import contract
+from openfermion.chem.molecular_data import spinorb_from_spatial
+from openfermionpyscf import run_pyscf
+
 
 Array = np.ndarray | torch.Tensor          # simple alias for type hints
 
 class HamFormat(Enum):
     """Output formats the Hamiltonian can be converted to."""
-    SPINORB_PV  = auto()     # (h, v) in the physical vacuum spin–orbital basis
     SPINORB_FV  = auto()     # (f, v_as) in the fermi vacuum spin–orbital basis
     SPATORB_PV  = auto()     # (h, v) in the physical vacuum spatial-orbital basis
     HILBERT     = auto()     # 2ⁿ×2ⁿ many-body matrix 
@@ -32,7 +35,7 @@ class Hamiltonian:
 
     def __init__(
         self,
-        h: Array,            # 1-electron integrals (n_so × n_so)
+        f: Array,            # 1-electron integrals (n_so × n_so)
         v: Array,            # 2-electron integrals (n_so⁴)
         n_a: int,            # number of alpha electrons
         n_b: int,            # number of beta  electrons
@@ -43,7 +46,7 @@ class Hamiltonian:
         w: Array | None = None,   # optional 3-electron integrals (n_so⁶)
         x: Array | None = None,   # optional 4-electron integrals (n_so⁸)
     ):
-        self._h = h
+        self._f = f
         self._v = v
         self.n_a = n_a
         self.n_b = n_b      
@@ -60,8 +63,6 @@ class Hamiltonian:
         if not isinstance(fmt, HamFormat):
             fmt = HamFormat[fmt.upper()]
 
-        if fmt is HamFormat.SPINORB_PV:
-            return self._as_spinorb_pv()
         if fmt is HamFormat.SPINORB_FV:
             return self._as_spinorb_fv()
         if fmt is HamFormat.SPATORB_PV:
@@ -82,16 +83,12 @@ class Hamiltonian:
         spec = (spec or "spinorb").upper()
         return str(self.to(spec))
 
-    @lru_cache
-    def _as_spinorb_pv(self):
-        """Return (h, v) exactly as stored (no copies)."""
-        return self._h, self._v
+    @classmethod
+    def from_physical_vacuum(cls, h: Array, v: Array, n_a: int, n_b: int, n_orb: int, constant: float = 0.0, *, n_act: int | None = None, w: Array | None = None, x: Array | None = None,) -> Hamiltonian:
+        # convert physical vacuum(h, v) to fermi vacuum (f, v)
+        f, v_fv = cls.move_to_fermi_vacuum(h, v, n_a, n_b, n_orb)
+        return cls(f, v_fv, n_a, n_b, n_orb,constant,n_act=n_act, w=w, x=x)
     
-    @lru_cache
-    def _as_spinorb_fv(self):
-        """Return (f, v) exactly as stored (no copies)."""
-        return self.move_to_quasiparticle()
-
     def _as_spatorb_pv(self):
         return self.export_pyscf()
 
@@ -116,7 +113,11 @@ class Hamiltonian:
         occupation-number basis
         """
         ham_op = self.export_FermionOperator()
-        return of.linalg.get_number_preserving_sparse_operator(ham_op, 2*self.n_act, self.n_a+self.n_b, spin_preserving=True)
+        number_preserving = True  
+        if number_preserving:
+            return of.linalg.get_number_preserving_sparse_operator(ham_op, 2*self.n_act, self.n_a+self.n_b, spin_preserving=True)
+        else:
+            return of.get_sparse_operator(ham_op, n_qubits=2*self.n_act)
 
     @lru_cache
     def _as_openfermion(self):
@@ -124,49 +125,18 @@ class Hamiltonian:
         return self.export_FermionOperator()
 
     def __repr__(self):
-        n_so = self._h.shape[0]
+        n_so = self._f.shape[0]
         return f"<Hamiltonian | {n_so} spin orbitals>"
 
-    def move_to_quasiparticle(self):
+    @staticmethod
+    def move_to_fermi_vacuum(h: Array, v_pv: Array, n_a, n_b, n_orb) -> tuple[Array,Array]:
         """
         f_{pq} = h_{pq} + \sum_{i \in occ} <pi||qi>
         v^{pq}_{rs} = <pq||rs>
         """
-        n_orb = self.n_orb
-        f = cp.deepcopy(self._h)
-        for p in range(0,n_orb):
-            pa = 2*p
-            pb = 2*p+1
-            for q in range(0,n_orb):
-                qa = 2*q
-                qb = 2*q+1
-                for i in range(self.n_a):
-                    f[pa,qa] += self._v[pa,qa,2*i,2*i] - self._v[pa,2*i,2*i,qa]
-                    f[pb,qb] += self._v[pb,qb,2*i,2*i]
-                for j in range(self.n_b):
-                    f[pa,qa] += self._v[pa,qa,2*j+1,2*j+1]
-                    f[pb,qb] += self._v[pb,qb,2*j+1,2*j+1] - self._v[pb,2*j+1,2*j+1,qb]        
-
-        v = np.zeros((2*n_orb,2*n_orb,2*n_orb,2*n_orb))
-        for p in range(0,n_orb):
-            pa = 2*p
-            pb = 2*p+1
-            for q in range(0,n_orb):
-                qa = 2*q
-                qb = 2*q+1
-                for r in range(0,n_orb):
-                    ra = 2*r
-                    rb = 2*r+1
-                    for s in range(0,n_orb):
-                        sa = 2*s
-                        sb = 2*s+1
-                        v[pa,qa,ra,sa] = self._v[pa,ra,qa,sa] - self._v[pa,sa,qa,ra]
-                        v[pa,qb,ra,sb] = self._v[pa,ra,qb,sb]
-                        v[pa,qb,rb,sa] = -self._v[pa,sa,qb,rb]
-                        v[pb,qa,rb,sa] = self._v[pb,rb,qa,sa]
-                        v[pb,qa,ra,sb] = -self._v[pb,sb,qa,ra]
-                        v[pb,qb,rb,sb] = self._v[pb,rb,qb,sb] - self._v[pb,sb,qb,rb]
-        
+        o = slice(None, n_a+n_b)        
+        v = contract('prqs', v_pv) - contract('psqr', v_pv)
+        f = h + contract('piqi->pq', v[:, o, :, o])
         return f, 0.25*v 
 
     def export_pyscf(self):
@@ -174,7 +144,7 @@ class Hamiltonian:
         n_occ = self.n_a+self.n_b
         n_act = self.n_act
 
-        fdic = one_body_mat2dic(self._h, n_occ, n_act, n_act)
+        fdic = one_body_mat2dic(self._f, n_occ, n_act, n_act)
         vdic = two_body_ten2dic(4*self._v, n_occ, n_act, n_act)
     
         fdic_pv = cp.deepcopy(fdic)
@@ -306,7 +276,7 @@ class Hamiltonian:
         n_act = self.n_act
 
         ham_op = of.FermionOperator("", self.constant)
-        ham_op += normal_ordered(one_body_to_op(self._h,n_occ,n_act))
+        ham_op += normal_ordered(one_body_to_op(self._f,n_occ,n_act))
         ham_op += normal_ordered(two_body_to_op(self._v,n_occ,n_act))        
 
         if self._w is not None:
