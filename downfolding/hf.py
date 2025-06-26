@@ -24,13 +24,13 @@ def calc_hf(system, H):
 
     n_a, n_b = system.n_a, system.n_b
     E_nuc    = system.nuclear_repulsion
-    h        = H._h         
+    f        = H._f       
     v        = H._v        
 
     idx_a = 2 * np.arange(n_a)        # alpha: 0,2,4,…
     idx_b = 2 * np.arange(n_b) + 1    # beta: 1,3,5,…
 
-    e1 = h[idx_a, idx_a].sum() + h[idx_b, idx_b].sum()
+    e1 = f[idx_a, idx_a].sum() + f[idx_b, idx_b].sum()
 
     ia, ja = np.triu_indices(n_a, k=1)   
     ib, jb = np.triu_indices(n_b, k=1)   

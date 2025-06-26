@@ -3730,8 +3730,6 @@ def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: boo
     t1_amps = np.array(mccsd.t1)
     t2_amps = np.array(mccsd.t2)
 
-    print("Size of the active space                       :%10i" %(n_act))
-
     fmat, vten = H._f, H._v 
     ccsd_energy = calc_ccsd(fmat, vten, t1_amps, t2_amps, verbose=0)
     assert np.isclose(ccsd_energy+system.meanfield.e_tot, mccsd.e_tot, rtol=0.0, atol=1e-8)
@@ -3759,22 +3757,24 @@ def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: boo
 
     print("\n   DUCC Calculation Summary")
     print("   -------------------------------------")
-
+    print("Size of the active space                       :%10i" %(n_act))
+    print(f"CCSD Total Energy                              :%21.12f"%(mccsd.e_tot))
+    print(f"CCSD Correlation Energy                        :%21.12f"%(ccsd_energy))
     use_pyscf = True    
     if use_pyscf:
         constant, h, g = ham(HamFormat.SPATORB_PV)
         p = fci.direct_nosym.FCISolver()
         e, fcivec = p.kernel(h, g, n_act, (n_a,n_b), max_space=450, nroots=1, verbose=0)
-        print(f"DUCC_{key.upper()} Full CI PySCF                          :%21.15f"%(e+constant))
+        print(f"DUCC_{key.upper()} Full CI PySCF                          :%21.12f"%(e+constant))
 
     use_openfermion = True  
     if use_openfermion:
         ham_mat = ham(HamFormat.HILBERT)
         evals, evecs = scipy.sparse.linalg.eigsh(ham_mat, k=1, which="SA")
-        print(f"DUCC_{key.upper()} Full CI OpenFermion                    :%21.15f"%(evals[0]))
+        print(f"DUCC_{key.upper()} Full CI OpenFermion                    :%21.12f"%(evals[0]))
 
     dt = time.perf_counter() - t0
     m, s = divmod(dt, 60)
-    print("DUCC wall time                                 :%8.2f m  %3.2f s" % (m, s))
+    print("DUCC wall time                                 :%11.2f m  %3.2f s" % (m, s))
 
     return e+constant

@@ -64,20 +64,6 @@ def load_pyscf_integrals(meanfield, n_frzn_occ=0,n_act=None, dm0=None, stability
     S = mol.intor('int1e_ovlp_sph')
     I = mol.intor('int2e_sph')
 
-    print("\nSystem and Method:")
-    print(mol.atom)
-
-    print("Basis set                                      :%12s" %(mol.basis))
-    print("Number of Orbitals                             :%10i" %(n_orb))
-    print("Number of electrons                            :%10i" %(n_el))
-    print("Number of alpha electrons                      :%10i" %(n_a))
-    print("Number of beta electrons                       :%10i" %(n_b))
-    print("Nuclear Repulsion                              :%18.12f " %E_nuc)
-    print("Electronic SCF energy                          :%18.12f " %(meanfield.e_tot-E_nuc))
-    print("SCF Energy                                     :%21.15f"%(meanfield.e_tot))
-
-
-    print(" AO->MO")
     if n_frzn_occ != 0:
         print("Number of frozen orbitals = ",n_frzn_occ)
         assert(n_frzn_occ <= n_b)
@@ -125,8 +111,6 @@ def load_pyscf_integrals(meanfield, n_frzn_occ=0,n_act=None, dm0=None, stability
               np.kron(eri_ba, BA) +
               np.kron(eri_bb, BB))
     
-
-
     print(eri_so.shape, " %12.8f Mb" %(eri_so.nbytes*1e-6))
 
     hamiltonian = Hamiltonian.from_physical_vacuum(h, eri_so, n_a, n_b, n_orb)
@@ -142,4 +126,6 @@ def load_pyscf_integrals(meanfield, n_frzn_occ=0,n_act=None, dm0=None, stability
         mo_energies=meanfield.mo_energy,
         mo_occupation=meanfield.mo_occ,
     )
+    system.print()
+
     return system, hamiltonian

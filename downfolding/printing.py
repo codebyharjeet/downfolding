@@ -1,6 +1,7 @@
+import datetime
 
-
-
+def get_timestamp():
+    return datetime.datetime.strptime(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "%Y-%m-%d %H:%M:%S")
 
 def tprint(tens,thresh=1e-15):
 	"""Print indices and value of non-zero tensor elements
@@ -57,5 +58,3 @@ def tprint(tens,thresh=1e-15):
 	else:
 		print("TODO: implement a printing for a %dD tensor."%(np.ndim(tens)))
 		exit()
-
-

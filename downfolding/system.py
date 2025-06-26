@@ -52,3 +52,20 @@ class System():
         self.nuclear_repulsion = nuclear_repulsion
         self.mo_energies = mo_energies
         self.mo_occupation = mo_occupation
+    
+
+    def print(self):
+        print("\nSystem and Method:")
+        mol = self.meanfield.mol 
+        print(mol.atom)
+        print("Basis set                                      :%12s" %(mol.basis))
+        print("Number of Orbitals                             :%10i" %(self.norbitals))
+        print("Number of electrons                            :%10i" %(self.nelectrons))
+        print("Number of alpha electrons                      :%10i" %(self.n_a))
+        print("Number of beta electrons                       :%10i" %(self.n_b))
+        print("Nuclear Repulsion                              :%18.12f " %self.nuclear_repulsion)
+        print("Electronic SCF energy                          :%18.12f " %(self.meanfield.e_tot-self.nuclear_repulsion))
+        print("SCF Energy                                     :%18.12f"%(self.meanfield.e_tot))        
+
+
+    
