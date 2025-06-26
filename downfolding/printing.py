@@ -1,4 +1,5 @@
 import datetime
+from typing import Literal
 
 def get_timestamp():
     return datetime.datetime.strptime(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "%Y-%m-%d %H:%M:%S")
@@ -65,9 +66,20 @@ def ccsd_summary(ccsd_tot, ccsd_corr):
     print(f"CCSD Total Energy                              :%18.12f"%(ccsd_tot))
     print(f"CCSD Correlation Energy                        :%18.12f"%(ccsd_corr))    
 
-# def ducc_summary():
-#     print("\n   DUCC Calculation Summary")
-#     print("   -------------------------------------")
-#     print("Size of the active space                       :%10i" %(n_act))
-#     print(f"CCSD Total Energy                              :%21.12f"%(mccsd.e_tot))
-#     print(f"CCSD Correlation Energy                        :%21.12f"%(ccsd_energy))  
+def ducc_summary(energy: float, backend: Literal["pyscf", "openfermion"]) -> None:
+    """
+    Print a formatted DUCC Full-CI energy.
+
+    Parameters
+    ----------
+    energy : float
+        The computed ground-state energy.
+    backend : {"pyscf","openfermion"}
+        Which backend computed energy.
+    """
+    labels = {
+        "pyscf":       "DUCC Full CI (PySCF)",
+        "openfermion": "DUCC Full CI (OpenFermion)",
+    }
+    label = labels.get(backend, backend)
+    print(f"{label:46s} : {energy:17.12f}")

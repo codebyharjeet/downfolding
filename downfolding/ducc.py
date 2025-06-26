@@ -3764,6 +3764,6 @@ def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: boo
     print(f"DUCC {key.upper()} hamiltonian constructed!")
     dt = time.perf_counter() - t0
     m, s = divmod(dt, 60)
-    print("DUCC wall time                                 :%11.2f m  %3.2f s" % (m, s))
+    print("DUCC wall time                                 :%8.2f m  %3.2f s" % (m, s))
 
     return ham 
