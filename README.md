@@ -12,10 +12,10 @@ A simple python package for computing **Double Unitary Coupled Cluster** (DUCC) 
 
 ## Features
 
-* **Flexible Input Formats**: Initialize from PySCF mean-field objects or FCIDUMP files.
+* **Flexible Input Formats**: Initialize from PySCF mean-field object or FCIDUMP file.
 * **Multiple DUCC Approximations**: Choose between A2–A7 methods, with optional 3‑ and 4‑body terms.
 * **Exact Diagonalization**: Support for PySCF FCI solver and sparse eigensolvers via OpenFermion.
-* **Exportable Integrals**: Save downfolded integrals in `.npz` or OpenFermion operator formats.
+* **Exportable Integrals**: Save downfolded integrals in `.npz` or OpenFermion operator format.
 
 ---
 
@@ -29,7 +29,7 @@ cd downfolding
 python -m pip install .
 ```
 
-> This will compile the package and install all dependencies: NumPy, Opt\_einsum, PySCF, OpenFermion, and PyTorch.
+> This will compile the package and install all dependencies: NumPy, opt\_einsum, PySCF, OpenFermion, and PyTorch.
 
 ---
 
@@ -47,7 +47,7 @@ mf.kernel(verbose=0)
 # 2) Initialize DUCC driver (nfrozen = number of frozen orbitals)
 driver = Driver.from_pyscf(mf, nfrozen=0)
 
-# 3) Compute DUCC A7 energy in active space of size n_act
+# 3) Compute DUCC A7 Hamiltonian in active space of size n_act
 driver.run_ducc(
     n_act=6,
     approximation="a7",
@@ -74,7 +74,7 @@ driver.save_integrals(format="npz")
 driver.save_integrals(format="openfermion")
 ```
 
-This will write files like into the current directory.
+> This will write files into the current directory.
 
 
 ### Copyright
