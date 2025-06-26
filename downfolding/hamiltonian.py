@@ -9,8 +9,6 @@ from downfolding.helper import one_body_mat2dic, two_body_ten2dic, one_body_to_o
 import openfermion as of 
 from openfermion import *
 from opt_einsum import contract
-from openfermion.chem.molecular_data import spinorb_from_spatial
-from openfermionpyscf import run_pyscf
 
 
 Array = np.ndarray | torch.Tensor          # simple alias for type hints
