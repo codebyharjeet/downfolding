@@ -126,4 +126,4 @@ def load_pyscf_integrals(meanfield, n_frzn_occ=0,n_act=None, dm0=None, stability
     )
     system.print()
 
-    return system, hamiltonian
+    return system, hamiltonian, hf_energy

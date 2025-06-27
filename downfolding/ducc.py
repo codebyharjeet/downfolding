@@ -3767,3 +3767,6 @@ def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: boo
     print("DUCC wall time                                 :%8.2f m  %3.2f s" % (m, s))
 
     return ham 
+
+
+    

@@ -5,7 +5,7 @@ import numpy as np
 import scipy
 from downfolding.interfaces import load_pyscf_integrals
 from downfolding.hamiltonian import HamFormat, Hamiltonian
-from downfolding.printing import ducc_summary
+from downfolding.printing import get_timestamp, ducc_summary, ccsd_summary
 import pyscf
 from pyscf import gto, scf, mcscf, fci, ao2mo, lo, cc, lib
 from pyscf.cc import ccsd
@@ -16,13 +16,14 @@ class Driver:
 
     @classmethod
     def from_pyscf(cls, meanfield, nfrozen):
+        get_timestamp()
         return cls(*load_pyscf_integrals(meanfield, nfrozen))
 
     # @classmethod
     # def from_fcidump(cls, fcidump, nfrozen, data_type=np.float64):
     #     return cls(*load_fcidump_integrals(fcidump, nfrozen, data_type=data_type))
     
-    def __init__(self, system, hamiltonian):
+    def __init__(self, system, hamiltonian, hf_energy):
         """
         Parameters
         ----------
@@ -31,7 +32,7 @@ class Driver:
         """
         self.system = system
         self.H = hamiltonian
-        self.hf_energy = 0
+        self.hf_energy = hf_energy
         self.correlation_energy = 0
 
     
@@ -42,6 +43,15 @@ class Driver:
         from downfolding.hf import calc_hf
         self.hf_energy = calc_hf(self.system, self.H)
 
+    def run_ccsd(self):
+        """
+        Compute the CCSD energy.
+        """
+        from downfolding.ccsd import ccsd_energy, ccsd_main 
+        ccsd_etot = ccsd_main(self.system, self.H)
+        self.correlation_energy = ccsd_etot - self.hf_energy
+        ccsd_summary(ccsd_etot, self.correlation_energy)
+
     def run_ducc(self, n_act, approximation, three_body, four_body):
         """
         Compute the DUCC energy.
@@ -50,7 +60,6 @@ class Driver:
 
         ham = calc_ducc(self.system, self.H, n_act, approximation, three_body=three_body, four_body=four_body)
         setattr(self, "H", ham)
-
 
     def exact_diagonalize(self, backend: str="pyscf") -> None:
         """
@@ -86,7 +95,6 @@ class Driver:
         else:
             raise ValueError(f"Unsupported backend '{backend}'. "
                             "Available options: 'pyscf', 'openfermion'")
-
 
     def save_integrals(self, format: Literal["npz", "openfermion"] = "npz", filename: str | None = None, directory: Path | str | None = None,) -> Path:
         """

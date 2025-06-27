@@ -279,6 +279,14 @@ class Hamiltonian:
             ham_op += normal_ordered(four_body_to_op(self._x,n_occ,n_act))
         return ham_op
 
+    def extract_local_hamiltonian(self):
+        """ Extract local Hamiltonian acting only on subset of orbitals """
+        assert(self.n_act <= self.n_orb)
+        orb_subset = self.n_act
+        self._f = self._f[:,0:2*orb_subset][0:2*orb_subset]
+        self._v = self._v[:,:,:,0:2*orb_subset][:,:,0:2*orb_subset][:,0:2*orb_subset][0:2*orb_subset]
+        return None 
+
 
 """
 ## Use case 

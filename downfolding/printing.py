@@ -1,8 +1,18 @@
-import datetime
+from datetime import datetime 
 from typing import Literal
 
 def get_timestamp():
-    return datetime.datetime.strptime(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "%Y-%m-%d %H:%M:%S")
+    width = 60
+    border = "=" * width
+    label  = "Downfolding Package Initialized"
+    ts     = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp_line = f"Timestamp: {ts}"
+
+    print("\n" + border)
+    print(f"{label:^{width}}")
+    print(f"{timestamp_line:^{width}}")
+    print(border + "\n")
+
 
 def tprint(tens,thresh=1e-15):
 	"""Print indices and value of non-zero tensor elements
