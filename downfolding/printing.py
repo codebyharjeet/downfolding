@@ -76,6 +76,13 @@ def ccsd_summary(ccsd_tot, ccsd_corr):
     print(f"CCSD Total Energy                              :%18.12f"%(ccsd_tot))
     print(f"CCSD Correlation Energy                        :%18.12f"%(ccsd_corr))    
 
+def ccsd_t_summary(ccsd_tot, ccsd_t_corr):
+	print("\n   CCSD(T) Calculation Summary")
+	print("   -------------------------------------")
+	print(f"CCSD Total Energy                              :%18.12f"%(ccsd_tot))
+	print(f"CCSD(T) Correlation Energy                     :%18.12f"%(ccsd_t_corr))
+	print(f"CCSD(T) Total Energy                           :%18.12f"%(ccsd_tot+ccsd_t_corr))  
+
 def ducc_summary(energy: float, backend: Literal["pyscf", "openfermion"]) -> None:
     """
     Print a formatted DUCC Full-CI energy.

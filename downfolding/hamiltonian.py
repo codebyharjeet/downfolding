@@ -5,7 +5,7 @@ import torch
 from enum import Enum, auto
 from functools import lru_cache
 from typing import Dict
-from downfolding.helper import one_body_mat2dic, two_body_ten2dic, one_body_to_op, two_body_to_op
+from downfolding.helper import one_body_mat2dic, two_body_ten2dic, one_body_to_op, two_body_to_op, three_body_to_op, four_body_to_op
 from downfolding.printing import ccsd_summary
 import openfermion as of 
 from openfermion import *

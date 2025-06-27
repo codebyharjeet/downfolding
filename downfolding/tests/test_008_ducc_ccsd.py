@@ -3,7 +3,7 @@ import sys
 from pyscf import gto, scf
 from downfolding import *
 
-def test_Driver():
+def test_005_ducc_ccsd():
     # build molecule using PySCF and run SCF calculation
     mol = gto.M(
         atom=[["Be", (0.0, 0.0, 0.0)]],
@@ -24,4 +24,4 @@ def test_Driver():
     driver.run_ccsd()
 
     
-test_Driver()
+test_005_ducc_ccsd()

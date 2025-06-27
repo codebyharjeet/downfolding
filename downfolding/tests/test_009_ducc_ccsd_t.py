@@ -3,7 +3,7 @@ import sys
 from pyscf import gto, scf
 from downfolding import *
 
-def test_Driver():
+def test_007_ducc_ccsd_t():
     # build molecule using PySCF and run SCF calculation
     mol = gto.M(
         atom=[["Be", (0.0, 0.0, 0.0)]],
@@ -21,5 +21,7 @@ def test_Driver():
 
     driver.exact_diagonalize(backend="openfermion")
 
+    driver.run_ccsd_t()
+
     
-test_Driver()
+test_007_ducc_ccsd_t()

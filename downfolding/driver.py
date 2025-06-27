@@ -5,7 +5,7 @@ import numpy as np
 import scipy
 from downfolding.interfaces import load_pyscf_integrals
 from downfolding.hamiltonian import HamFormat, Hamiltonian
-from downfolding.printing import get_timestamp, ducc_summary, ccsd_summary
+from downfolding.printing import get_timestamp, ducc_summary, ccsd_summary, ccsd_t_summary
 import pyscf
 from pyscf import gto, scf, mcscf, fci, ao2mo, lo, cc, lib
 from pyscf.cc import ccsd
@@ -47,10 +47,21 @@ class Driver:
         """
         Compute the CCSD energy.
         """
-        from downfolding.ccsd import ccsd_energy, ccsd_main 
+        from downfolding.ccsd import ccsd_main 
         ccsd_etot = ccsd_main(self.system, self.H)
         self.correlation_energy = ccsd_etot - self.hf_energy
         ccsd_summary(ccsd_etot, self.correlation_energy)
+        return ccsd_etot
+
+    def run_ccsd_t(self):
+        """
+        Compute the CCSD(T) energy.
+        """
+        from downfolding.ccsd_t import ccsd_t_main 
+        ccsd_etot, ccsd_t_corr = ccsd_t_main(self.system, self.H)
+        ccsd_t_summary(ccsd_etot, ccsd_t_corr)
+        # self.correlation_energy = ccsd_etot - self.hf_energy
+        return ccsd_etot, ccsd_t_corr
 
     def run_ducc(self, n_act, approximation, three_body, four_body):
         """
@@ -60,6 +71,7 @@ class Driver:
 
         ham = calc_ducc(self.system, self.H, n_act, approximation, three_body=three_body, four_body=four_body)
         setattr(self, "H", ham)
+
 
     def exact_diagonalize(self, backend: str="pyscf") -> None:
         """
@@ -82,19 +94,20 @@ class Driver:
             n_b = self.H.n_b
             constant, h, g = self.H(HamFormat.SPATORB_PV)
             p = fci.direct_nosym.FCISolver()
-            e, fcivec = p.kernel(h, g, n_act, (n_a,n_b), max_space=450, nroots=1, verbose=0)
-            # print(f"DUCC Full CI PySCF                             :%18.12f"%(e+constant))            
-            ducc_summary(e+constant, backend)
+            e, fcivec = p.kernel(h, g, n_act, (n_a,n_b), max_space=450, nroots=1, verbose=0)      
+            energy = e+constant
 
         elif backend == "openfermion":
             ham_mat = self.H(HamFormat.HILBERT)
             evals, evecs = scipy.sparse.linalg.eigsh(ham_mat, k=1, which="SA")
-            # print(f"DUCC Full CI OpenFermion                       :%18.12f"%(evals[0]))   
-            ducc_summary(evals[0], backend)
-
+            energy = evals[0]
+            
         else:
             raise ValueError(f"Unsupported backend '{backend}'. "
                             "Available options: 'pyscf', 'openfermion'")
+        
+        ducc_summary(energy, backend)
+        return energy
 
     def save_integrals(self, format: Literal["npz", "openfermion"] = "npz", filename: str | None = None, directory: Path | str | None = None,) -> Path:
         """

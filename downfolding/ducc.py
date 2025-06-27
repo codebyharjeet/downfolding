@@ -3739,7 +3739,6 @@ def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: boo
     print("\n   DUCC Calculation Summary")
     print("   -------------------------------------")
     print("Size of the active space                       :%10i" %(n_act))
-
     n_a = system.n_a
     n_b = system.n_b 
     t0 = time.perf_counter()
@@ -3747,17 +3746,17 @@ def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: boo
     if key == "a1":
         ham = eff_ham_a1(fmat,vten,n_a,n_b,n_act)    
     elif key == "a2":
-        ham = eff_ham_a2(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=False)
+        ham = eff_ham_a2(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body)
     elif key == "a3":
-        ham = eff_ham_a3(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=False)
+        ham = eff_ham_a3(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body)
     elif key == "a4":
-        ham = eff_ham_a4(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=False)
+        ham = eff_ham_a4(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body)
     elif key == "a5":
-        ham = eff_ham_a5(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=False,four_body=False)
+        ham = eff_ham_a5(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body,four_body=four_body)
     elif key == "a6":
-        ham = eff_ham_a6(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=False,four_body=False)
+        ham = eff_ham_a6(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body,four_body=four_body)
     elif key == "a7":
-        ham = eff_ham_a7(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=False,four_body=False)        
+        ham = eff_ham_a7(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body,four_body=four_body)        
     else:
         raise ValueError(f"Unsupported DUCC method {key!r}; choose between 'A1' to 'A7'.")
 
@@ -3765,8 +3764,7 @@ def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: boo
     dt = time.perf_counter() - t0
     m, s = divmod(dt, 60)
     print("DUCC wall time                                 :%8.2f m  %3.2f s" % (m, s))
-
+    
     return ham 
 
 
-    
