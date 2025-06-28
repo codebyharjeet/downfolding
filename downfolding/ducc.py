@@ -3721,7 +3721,7 @@ def eff_ham_a7(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=False,four_bod
 
 
 def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: bool = False, four_body: bool  = False,):
-    mccsd = cc.UCCSD(system.meanfield)
+    mccsd = cc.UCCSD(system.meanfield, frozen=system.nfrozen)
     # mccsd.conv_tol = 1e-12
     # mccsd.conv_tol_normt = 1e-10
     mccsd.max_cycle = 1000
