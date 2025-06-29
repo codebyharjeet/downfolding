@@ -73,8 +73,9 @@ def tprint(tens,thresh=1e-15):
 def ccsd_summary(ccsd_tot, ccsd_corr):
     print("\n   CCSD Calculation Summary")
     print("   -------------------------------------")
+    print(f"CCSD Correlation Energy                        :%18.12f"%(ccsd_corr))   
     print(f"CCSD Total Energy                              :%18.12f"%(ccsd_tot))
-    print(f"CCSD Correlation Energy                        :%18.12f"%(ccsd_corr))    
+ 
 
 def ccsd_t_summary(ccsd_tot, ccsd_t_corr):
 	print("\n   CCSD(T) Calculation Summary")
@@ -83,20 +84,18 @@ def ccsd_t_summary(ccsd_tot, ccsd_t_corr):
 	print(f"CCSD(T) Correlation Energy                     :%18.12f"%(ccsd_t_corr))
 	print(f"CCSD(T) Total Energy                           :%18.12f"%(ccsd_tot+ccsd_t_corr))  
 
-def ducc_summary(energy: float, backend: Literal["pyscf", "openfermion"]) -> None:
-    """
-    Print a formatted DUCC Full-CI energy.
+def ducc_summary(energy: float, backend: Literal["pyscf", "openfermion"], hf_energy: float) -> None:
+	"""
+	Print a formatted DUCC Full-CI energy.
 
-    Parameters
-    ----------
-    energy : float
-        The computed ground-state energy.
-    backend : {"pyscf","openfermion"}
-        Which backend computed energy.
-    """
-    labels = {
-        "pyscf":       "DUCC Full CI (PySCF)",
-        "openfermion": "DUCC Full CI (OpenFermion)",
-    }
-    label = labels.get(backend, backend)
-    print(f"{label:46s} : {energy:17.12f}")
+	Parameters
+	----------
+	energy : float
+		The computed ground-state energy.
+	backend : {"pyscf","openfermion"}
+		Which backend computed energy.
+	"""
+	print(f"\n   Exact Diagonalization Summary (using {backend})")
+	print("   -------------------------------------")
+	print(f"DUCC Full CI Correlation Energy                :%18.12f"%(energy))  
+	print(f"DUCC Full CI Total Energy                      :%18.12f"%(energy+hf_energy))  

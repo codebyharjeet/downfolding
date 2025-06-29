@@ -30,6 +30,6 @@ def test_004_ducc_a6():
 def test_004_ducc_a7():
     _check_ducc("a7", -0.045708465026364)
 
-test_004_ducc_a5()
-test_004_ducc_a6()
-test_004_ducc_a7()
+# test_004_ducc_a5()
+# test_004_ducc_a6()
+# test_004_ducc_a7()

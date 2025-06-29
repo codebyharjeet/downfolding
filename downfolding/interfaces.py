@@ -65,21 +65,21 @@ def load_pyscf_integrals(meanfield, n_frzn_occ=0,n_act=None, dm0=None, stability
     I = mol.intor('int2e_sph')
 
     if n_frzn_occ != 0:
-        print("Number of frozen orbitals = ",n_frzn_occ)
+        # print("Number of frozen orbitals = ",n_frzn_occ)
         assert(n_frzn_occ <= n_b)
         n_a   -= n_frzn_occ
         n_b   -= n_frzn_occ
-        n_orb -= n_frzn_occ
-        print(" NElectrons: %4i %4i" %(n_a, n_b))
+        n_el  = n_a + n_b
+        # print(" NElectrons: %4i %4i" %(n_a, n_b))
         C = meanfield.mo_coeff
-        Cact = C[:,n_frzn_occ:n_frzn_occ+n_orb]
+        Cact = C[:,n_frzn_occ:n_orb]
         Cocc = C[:,0:n_frzn_occ]
         dm = Cocc @ Cocc.T
         j, k = scf.hf.get_jk(mol, dm)
         t = H_core + 2*j - k
         h = reduce(np.dot, (Cact.conj().T, H_core + 2*j - k, Cact))
         ecore = np.trace(2*dm @ (H_core + j - .5*k))
-        print(" ecore: %12.8f" %ecore) 
+        # print(" ecore: %12.8f" %ecore) 
         E_nuc += ecore
         C_a = C_b = Cact
         H_a = H_b = h 

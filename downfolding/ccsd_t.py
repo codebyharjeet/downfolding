@@ -404,4 +404,4 @@ def ccsd_t_main(system, ham):
     l2 = t2f.transpose(2, 3, 0, 1)
     t_en = t_energy(l1, l2, t3f, fock, g, o, v)
     
-    return en, t_en 
+    return en+system.nuclear_repulsion, t_en 

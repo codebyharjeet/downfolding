@@ -414,7 +414,7 @@ def kernel(t1, t2, fock, g, o, v, e_ai, e_abij, max_iter=100, stopping_eps=1.0E-
         print("Did not converge")
         return new_singles, new_doubles
 
-def ccsd_main(system, ham):
+def ccsd_main(system, ham, diis_size, diis_start_cycle):
     if ham.n_act is None:
         n_act = ham.n_orb 
     else:
@@ -438,15 +438,14 @@ def ccsd_main(system, ham):
     fock = ham._f 
     g = 4*ham._v 
     
-    print("\tWithout DIIS")
-    t1f, t2f = kernel(np.zeros((nsvirt, nsocc)), np.zeros((nsvirt, nsvirt, nsocc, nsocc)), fock, g, o, v, e_ai, e_abij)
-    ccsd_etot = ccsd_energy(t1f, t2f, fock, g, o, v)
+    # print("\tWithout DIIS")
+    # t1f, t2f = kernel(np.zeros((nsvirt, nsocc)), np.zeros((nsvirt, nsvirt, nsocc, nsocc)), fock, g, o, v, e_ai, e_abij)
+    # ccsd_etot = ccsd_energy(t1f, t2f, fock, g, o, v)
 
-    diis_size = 8
-    diis_start_cycle = 4
+    print("\n Running CCSD (Manual Code)")
     print(f"\tWith DIIS (diis_size={diis_size}, diis_start_cycle={diis_start_cycle}) ")
     t1f, t2f = kernel(np.zeros((nsvirt, nsocc)), np.zeros((nsvirt, nsvirt, nsocc, nsocc)), fock, g, o, v, e_ai, e_abij,
                       diis_size=diis_size, diis_start_cycle=diis_start_cycle)
     ccsd_etot = ccsd_energy(t1f, t2f, fock, g, o, v)
-    return ccsd_etot
+    return (ccsd_etot + system.nuclear_repulsion)
 

@@ -41,10 +41,10 @@ def test_004_ducc_a6():
 def test_004_ducc_a7():
     _check_ducc("a7", -0.045712829211288)
 
-test_004_ducc_a1()
-test_004_ducc_a2()
-test_004_ducc_a3()
-test_004_ducc_a4()
-test_004_ducc_a5()
-test_004_ducc_a6()
-test_004_ducc_a7()
+# test_004_ducc_a1()
+# test_004_ducc_a2()
+# test_004_ducc_a3()
+# test_004_ducc_a4()
+# test_004_ducc_a5()
+# test_004_ducc_a6()
+# test_004_ducc_a7()

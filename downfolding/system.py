@@ -62,12 +62,18 @@ class System():
         print(mol.atom)
         print("Basis set                                      :%12s" %(mol.basis))
         print("Number of Orbitals                             :%10i" %(self.norbitals))
-        print("Number of electrons                            :%10i" %(self.nelectrons))
-        print("Number of alpha electrons                      :%10i" %(self.n_a))
-        print("Number of beta electrons                       :%10i" %(self.n_b))
+        print("Number of electrons                            :%10i" %(self.nelectrons+2*self.nfrozen))
+        print("Number of alpha electrons                      :%10i" %(self.n_a+self.nfrozen))
+        print("Number of beta electrons                       :%10i" %(self.n_b+self.nfrozen))
         print("Nuclear Repulsion                              :%18.12f " %self.nuclear_repulsion)
         print("Electronic SCF energy                          :%18.12f " %(self.meanfield.e_tot-self.nuclear_repulsion))
         print("SCF Energy                                     :%18.12f"%(self.meanfield.e_tot))        
 
-
+        if self.nfrozen != 0:
+            print("")
+            print("Number of frozen core orbitals                 :%10i" %(self.nfrozen))
+            print("Number of Orbitals                             :%10i" %(self.norbitals-self.nfrozen))
+            print("Number of electrons                            :%10i" %(self.nelectrons))
+            print("Number of alpha electrons                      :%10i" %(self.n_a))
+            print("Number of beta electrons                       :%10i" %(self.n_b))
     

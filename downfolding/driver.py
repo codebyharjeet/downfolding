@@ -43,12 +43,12 @@ class Driver:
         from downfolding.hf import calc_hf
         self.hf_energy = calc_hf(self.system, self.H)
 
-    def run_ccsd(self):
+    def run_ccsd(self, diis_size=10, diis_start_cycle=0):
         """
         Compute the CCSD energy.
         """
         from downfolding.ccsd import ccsd_main 
-        ccsd_etot = ccsd_main(self.system, self.H)
+        ccsd_etot = ccsd_main(self.system, self.H, diis_size, diis_start_cycle)
         self.correlation_energy = ccsd_etot - self.hf_energy
         ccsd_summary(ccsd_etot, self.correlation_energy)
         return ccsd_etot
@@ -106,7 +106,7 @@ class Driver:
             raise ValueError(f"Unsupported backend '{backend}'. "
                             "Available options: 'pyscf', 'openfermion'")
         
-        ducc_summary(energy, backend)
+        ducc_summary(energy, backend, self.hf_energy)
         return energy
 
     def save_integrals(self, format: Literal["npz", "openfermion"] = "npz", filename: str | None = None, directory: Path | str | None = None,) -> Path:
