@@ -492,7 +492,7 @@ def doubles_residual(t1, t2, f, g, o, v):
 
     return doubles_res
 
-def kernel(t1, t2, fock, g, o, v, e_ai, e_abij, nuclear_repulsion, max_iter=150, stopping_eps=1.0E-9, diis_size=None, diis_start_cycle=4):
+def kernel(t1, t2, fock, g, o, v, e_ai, e_abij, nuclear_repulsion, hf_energy, max_iter=150, stopping_eps=1.0E-9, diis_size=None, diis_start_cycle=4):
     if diis_size is not None:
         print(f"\nRunning CCSD (slow) with DIIS (diis_size={diis_size}, diis_start_cycle={diis_start_cycle}) ")
         diis_update = DIIS(diis_size, start_iter=diis_start_cycle)
@@ -504,7 +504,8 @@ def kernel(t1, t2, fock, g, o, v, e_ai, e_abij, nuclear_repulsion, max_iter=150,
     fock_e_ai = np.reciprocal(e_ai)
     fock_e_abij = np.reciprocal(e_abij)
     old_energy = ccsd_energy(t1, t2, fock, g, o, v) + nuclear_repulsion
-    print("Iteration\tEnergy\t\tDelta_E")
+    header = "Iter.     Energy [Eh]    Corr. energy [Eh]       Delta_E   "
+    print(header)
     for idx in range(max_iter):
 
         singles_res = singles_residual(t1, t2, fock, g, o, v) + fock_e_ai * t1
@@ -526,6 +527,7 @@ def kernel(t1, t2, fock, g, o, v, e_ai, e_abij, nuclear_repulsion, max_iter=150,
 
         current_energy = ccsd_energy(new_singles, new_doubles, fock, g, o, v) + nuclear_repulsion
         delta_e = np.abs(old_energy - current_energy)
+        corr_energy = current_energy - hf_energy
 
         if delta_e < stopping_eps:
             return new_singles, new_doubles
@@ -533,7 +535,7 @@ def kernel(t1, t2, fock, g, o, v, e_ai, e_abij, nuclear_repulsion, max_iter=150,
             t1 = new_singles
             t2 = new_doubles
             old_energy = current_energy
-            print("{: 5d}\t{: 5.12f}\t{: 5.12f}".format(idx, old_energy, delta_e))
+            print(f"{idx:3d}    {old_energy:+.12f}    {corr_energy:+.12f}    {delta_e:e}")
     else:
         print("Did not converge")
         return new_singles, new_doubles
@@ -569,7 +571,7 @@ def ccsd_main(system, ham, diis_size, diis_start_cycle, optimized):
             n, n, n, o])
         e_ai = 1 / (-eps[v, n] + eps[n, o])
 
-        t1f, t2f = kernel(np.zeros((nvirt, nocc)), np.zeros((nvirt, nvirt, nocc, nocc)), fock, g, o, v, e_ai, e_abij, system.nuclear_repulsion,
+        t1f, t2f = kernel(np.zeros((nvirt, nocc)), np.zeros((nvirt, nvirt, nocc, nocc)), fock, g, o, v, e_ai, e_abij, system.nuclear_repulsion, hf_energy=system.meanfield.e_tot,
                         diis_size=diis_size, diis_start_cycle=diis_start_cycle)
         
         Etot_w = ccsd_energy(t1f, t2f, fock, g, o, v) + system.nuclear_repulsion
