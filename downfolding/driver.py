@@ -5,7 +5,7 @@ import numpy as np
 import scipy
 from downfolding.interfaces import load_pyscf_integrals
 from downfolding.hamiltonian import HamFormat, Hamiltonian
-from downfolding.printing import get_timestamp, ducc_summary, ccsd_summary, ccsd_t_summary
+from downfolding.printing import get_timestamp, device_information, ducc_summary, ccsd_summary, ccsd_t_summary
 import pyscf
 from pyscf import gto, scf, mcscf, fci, ao2mo, lo, cc, lib
 from pyscf.cc import ccsd
@@ -17,6 +17,7 @@ class Driver:
     @classmethod
     def from_pyscf(cls, meanfield, nfrozen):
         get_timestamp()
+        device_information()
         return cls(*load_pyscf_integrals(meanfield, nfrozen))
 
     # @classmethod
@@ -43,12 +44,12 @@ class Driver:
         from downfolding.hf import calc_hf
         self.hf_energy = calc_hf(self.system, self.H)
 
-    def run_ccsd(self, diis_size=10, diis_start_cycle=0):
+    def run_ccsd(self, diis_size=None, diis_start_cycle=0, optimized=True):
         """
         Compute the CCSD energy.
         """
         from downfolding.ccsd import ccsd_main 
-        ccsd_etot = ccsd_main(self.system, self.H, diis_size, diis_start_cycle)
+        ccsd_etot = ccsd_main(self.system, self.H, diis_size, diis_start_cycle, optimized)
         self.correlation_energy = ccsd_etot - self.hf_energy
         ccsd_summary(ccsd_etot, self.correlation_energy)
         return ccsd_etot

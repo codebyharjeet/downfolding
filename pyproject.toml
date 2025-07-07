@@ -24,7 +24,8 @@ dependencies = [
   "opt_einsum>=3.3",
   "openfermion>=1.0",   
   "pyscf>=2.0",    
-  "torch>=2.0.0",       
+  "torch>=2.0.0",  
+  "psutil>=5.0",     
 ]
 
 # Update the urls once the hosting is set up.

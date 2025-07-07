@@ -1,5 +1,8 @@
 from datetime import datetime 
 from typing import Literal
+import subprocess
+import platform
+import psutil
 
 def get_timestamp():
     width = 60
@@ -13,6 +16,43 @@ def get_timestamp():
     print(f"{timestamp_line:^{width}}")
     print(border + "\n")
 
+def device_information():
+    """
+    Detects and prints the CPU model and total physical memory (GiB)
+    on macOS, Linux, or within an MPI/Slurm environment.
+    """
+    system = platform.system()
+    if system == "Darwin":
+        try:
+            out = subprocess.check_output(
+                ["sysctl", "-n", "machdep.cpu.brand_string"],
+                stderr=subprocess.DEVNULL
+            )
+            cpu = out.decode().strip()
+        except Exception:
+            cpu = platform.processor() or platform.machine()
+    elif system == "Linux":
+        try:
+            # Attempt to parse lscpu output for model name
+            out = subprocess.check_output(["lscpu"], universal_newlines=True)
+            for line in out.splitlines():
+                if "Model name:" in line:
+                    cpu = line.split(":", 1)[1].strip()
+                    break
+            else:
+                cpu = platform.processor() or platform.machine()
+        except Exception:
+            cpu = platform.processor() or platform.machine()
+    else:
+        cpu = platform.processor() or platform.machine()
+
+    mem_bytes = psutil.virtual_memory().total
+    mem_gib = round(mem_bytes / (1024 ** 3), 2)
+
+    print("\n   Device Information")
+    print("   -------------------------------------")
+    print(f"CPU 					       :%15s"  %(cpu))   
+    print(f"Available memory                               :%11.2f GB"%(mem_gib))
 
 def tprint(tens,thresh=1e-15):
 	"""Print indices and value of non-zero tensor elements

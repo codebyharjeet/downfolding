@@ -70,9 +70,10 @@ def load_pyscf_integrals(meanfield, n_frzn_occ=0,n_act=None, dm0=None, stability
         n_a   -= n_frzn_occ
         n_b   -= n_frzn_occ
         n_el  = n_a + n_b
+        n_orb -= n_frzn_occ
         # print(" NElectrons: %4i %4i" %(n_a, n_b))
         C = meanfield.mo_coeff
-        Cact = C[:,n_frzn_occ:n_orb]
+        Cact = C[:,n_frzn_occ:n_orb+n_frzn_occ]
         Cocc = C[:,0:n_frzn_occ]
         dm = Cocc @ Cocc.T
         j, k = scf.hf.get_jk(mol, dm)
@@ -119,7 +120,7 @@ def load_pyscf_integrals(meanfield, n_frzn_occ=0,n_act=None, dm0=None, stability
         n_b,
         n_orb,
         n_qubits,
-        n_frzn_occ,
+        nfrozen=n_frzn_occ,
         nuclear_repulsion=E_nuc,
         mo_energies=meanfield.mo_energy,
         mo_occupation=meanfield.mo_occ,

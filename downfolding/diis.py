@@ -15,12 +15,41 @@ class DIIS:
         self.start_iter = start_iter
         self.iter_idx = 0
 
+    # def compute_new_vec(self, iterate, error):
+    #     """
+    #     Compute a DIIS update.  Only perform diis update after start_vecs
+    #     have been accumulated.
+    #     """
+    #     # don't start DIIS until start_vecs
+    #     if self.iter_idx < self.start_iter:
+    #         self.iter_idx += 1
+    #         return iterate
+
+    #     self.prev_vecs.append(iterate)
+    #     self.error_vecs.append(error)
+    #     self.iter_idx += 1
+
+    #     # if prev_vecs is more than the diis space size then pop the oldest
+    #     if len(self.prev_vecs) > self.nvecs:
+    #         self.prev_vecs.pop(0)
+    #         self.error_vecs.pop(0)
+
+    #     # construct bmat and solve ax=b diis problem
+    #     b_mat, rhs = self.get_bmat()
+    #     c = np.linalg.solve(b_mat, rhs)
+
+    #     # construct new iterate  from solution to diis ax=b and previous vecs.
+    #     new_iterate = np.zeros_like(self.prev_vecs[0])
+    #     for ii in range(len(self.prev_vecs)):
+    #         new_iterate += c[ii] * self.prev_vecs[ii]
+    #     return new_iterate
+
     def compute_new_vec(self, iterate, error):
         """
         Compute a DIIS update.  Only perform diis update after start_vecs
         have been accumulated.
         """
-        # don't start DIIS until start_vecs
+        # don't start DIIS until start_iter
         if self.iter_idx < self.start_iter:
             self.iter_idx += 1
             return iterate
@@ -29,19 +58,22 @@ class DIIS:
         self.error_vecs.append(error)
         self.iter_idx += 1
 
-        # if prev_vecs is more than the diis space size then pop the oldest
+        # prune oldest DIIS vectors if we exceed the max
         if len(self.prev_vecs) > self.nvecs:
             self.prev_vecs.pop(0)
             self.error_vecs.pop(0)
 
-        # construct bmat and solve ax=b diis problem
+        # construct bmat and rhs
         b_mat, rhs = self.get_bmat()
-        c = np.linalg.solve(b_mat, rhs)
 
-        # construct new iterate  from solution to diis ax=b and previous vecs.
-        new_iterate = np.zeros_like(self.prev_vecs[0])
-        for ii in range(len(self.prev_vecs)):
-            new_iterate += c[ii] * self.prev_vecs[ii]
+        # try a direct solve, else fall back to least-squares
+        try:
+            coeff = np.linalg.solve(b_mat, rhs)
+        except np.linalg.LinAlgError:
+            coeff, *_ = np.linalg.lstsq(b_mat, rhs, rcond=None)
+
+        # build the new iterate
+        new_iterate = sum(c * v for c, v in zip(coeff, self.prev_vecs))
         return new_iterate
 
     def get_bmat(self):
