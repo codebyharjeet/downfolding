@@ -1,6 +1,8 @@
 import time
 import numpy as np
 
+from downfolding.hamiltonian import HamFormat
+
 
 def calc_hf(system, H):
     """
@@ -24,29 +26,30 @@ def calc_hf(system, H):
 
     n_a, n_b = system.n_a, system.n_b
     E_nuc    = system.nuclear_repulsion
-    f        = H._f       
-    v        = H._v        
 
-    idx_a = 2 * np.arange(n_a)        # alpha: 0,2,4,…
-    idx_b = 2 * np.arange(n_b) + 1    # beta: 1,3,5,…
+    constant, h, g = H(HamFormat.SPATORB_PV)
+    print(f"\nNuclear Repulsion Energy: {E_nuc:.10f}")
+    print(f"\nConstant Energy: {constant:.10f}")
 
-    e1 = f[idx_a, idx_a].sum() + f[idx_b, idx_b].sum()
+    e1 = 0
+    e2 = 0
 
-    ia, ja = np.triu_indices(n_a, k=1)   
-    ib, jb = np.triu_indices(n_b, k=1)   
+    # Extract the main diagonal of h to compute e1
+    h_diag = np.diag(h)
+    e1 = np.sum(h_diag[:n_a]) + np.sum(h_diag[:n_b])
 
-    J_aa = v[idx_a[ia], idx_a[ia], idx_a[ja], idx_a[ja]]
-    K_aa = v[idx_a[ia], idx_a[ja], idx_a[ja], idx_a[ia]]
+    # Pre-slice the g tensor to avoid redundant slicing overhead
+    g_aa = g[:n_a, :n_a, :n_a, :n_a]
+    g_bb = g[:n_b, :n_b, :n_b, :n_b]
+    g_ab = g[:n_a, :n_a, :n_b, :n_b]
 
-    J_bb = v[idx_b[ib], idx_b[ib], idx_b[jb], idx_b[jb]]
-    K_bb = v[idx_b[ib], idx_b[jb], idx_b[jb], idx_b[ib]]
+    # Use einsum to compute the 2-electron integrals
+    e2_aa = 0.5 * (np.einsum('iijj->', g_aa) - np.einsum('ijji->', g_aa))
+    e2_bb = 0.5 * (np.einsum('iijj->', g_bb) - np.einsum('ijji->', g_bb))
+    e2_ab = np.einsum('iijj->', g_ab)
 
-    # idx_a[:, None] → shape (n_a, 1) so broadcasting builds (n_a, n_b)
-    J_ab = v[idx_a[:, None], idx_a[:, None], idx_b, idx_b].sum()
-
-    e2 = (J_aa - K_aa).sum() + (J_bb - K_bb).sum() + J_ab
-
-    E_tot = e1 + e2 + E_nuc
+    e2 = e2_aa + e2_bb + e2_ab
+    E_tot = e1 + e2 + constant
 
     dt = time.perf_counter() - t0
     m, s = divmod(dt, 60)
@@ -59,6 +62,7 @@ def calc_hf(system, H):
     print(f"   HF Energy = {E_tot:16.10f}")
 
     return E_tot
+
 
 
 """
@@ -83,4 +87,33 @@ for i in range(n_b):
 for i in range(n_a):             
     for j in range(n_b):         
         e2 += v[2*i,2*i,2*j+1,2*j+1]
+
+
+    e1 = 0
+    e2 = 0
+    config_a = range(n_a)
+    config_b = range(n_b)
+    
+    for i in config_a:
+        e1 += h[i,i]
+    for i in config_b:
+        e1 += h[i,i]
+    for i in config_a:
+        for j in config_a:
+            if i>=j:
+                continue
+            e2 += g[i,i,j,j]
+            e2 -= g[i,j,j,i]
+    for i in config_b:             
+        for j in config_b:         
+            if i>=j:                
+                continue           
+            e2 += g[i,i,j,j]
+            e2 -= g[i,j,j,i]
+    for i in config_a:             
+        for j in config_b:         
+            e2 += g[i,i,j,j]
+    
+    E_tot = e1 + e2 + E_nuc 
+
 """

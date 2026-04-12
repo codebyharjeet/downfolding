@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List, Tuple, Dict, Literal
 import numpy as np
 import scipy
-from downfolding.interfaces import load_pyscf_integrals
+from downfolding.interfaces import load_mo_integrals, load_pyscf_integrals
 from downfolding.hamiltonian import HamFormat, Hamiltonian
 from downfolding.printing import get_timestamp, device_information, ducc_summary, ccsd_summary, ccsd_t_summary
 import pyscf
@@ -19,6 +19,10 @@ class Driver:
         get_timestamp()
         device_information()
         return cls(*load_pyscf_integrals(meanfield, nfrozen))
+
+    @classmethod
+    def from_mo_basis(cls, meanfield, n_e, n_orb, ecore, h1, h2, nfrozen, data_type=np.float64):
+        return cls(*load_mo_integrals(meanfield, n_e, n_orb, ecore, h1, h2, nfrozen, data_type=data_type))    
 
     # @classmethod
     # def from_fcidump(cls, fcidump, nfrozen, data_type=np.float64):
@@ -94,7 +98,7 @@ class Driver:
             n_a = self.H.n_a
             n_b = self.H.n_b
             constant, h, g = self.H(HamFormat.SPATORB_PV)
-            p = fci.direct_nosym.FCISolver()
+            p = fci.direct_spin0.FCISolver()
             e, fcivec = p.kernel(h, g, n_act, (n_a,n_b), max_space=450, nroots=1, verbose=0)      
             energy = e+constant
 

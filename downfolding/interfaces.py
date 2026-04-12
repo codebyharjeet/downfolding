@@ -128,3 +128,42 @@ def load_pyscf_integrals(meanfield, n_frzn_occ=0,n_act=None, dm0=None, stability
     system.print()
 
     return system, hamiltonian, hf_energy
+
+
+def load_mo_integrals(meanfield, n_e, n_orb, ecore, h1, h2, n_frzn_occ=0, data_type=np.float64):
+    time_init = time.time()
+
+    n_a = n_b = n_e // 2
+    n_qubits = 2*n_orb
+
+    A = np.array([[1,0],[0,0]])
+    B = np.array([[0,0],[0,1]])
+    AA = np.einsum("pq,rs->pqrs",A,A)
+    AB = np.einsum("pq,rs->pqrs",A,B)
+    BA = np.einsum("pq,rs->pqrs",B,A)
+    BB = np.einsum("pq,rs->pqrs",B,B)
+
+    h = np.kron(h1,A) + np.kron(h1,B)
+
+    eri_so = (np.kron(h2, AA) +
+              np.kron(h2, AB) +
+              np.kron(h2, BA) +
+              np.kron(h2, BB))
+    
+
+    hamiltonian = Hamiltonian.from_physical_vacuum(h, eri_so, n_a, n_b, n_orb, constant=ecore)
+    system = System(
+        meanfield,
+        n_e,
+        n_a,
+        n_b,
+        n_orb,
+        n_qubits,
+        nfrozen=n_frzn_occ,
+        nuclear_repulsion=ecore,
+        mo_energies=meanfield.mo_energy,
+        mo_occupation=meanfield.mo_occ,
+    )
+    system.print()
+
+    return system, hamiltonian, ecore

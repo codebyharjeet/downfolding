@@ -14,5 +14,7 @@ from .helper import asym_term, one_body_mat2dic, one_body_dic2mat, two_body_ten2
 from .printing import get_timestamp, device_information, tprint, ccsd_summary, ccsd_t_summary, ducc_summary
 from .utils import *
 from .diis import DIIS 
+from .orbitalpartitioning import *
+
 
 from ._version import __version__

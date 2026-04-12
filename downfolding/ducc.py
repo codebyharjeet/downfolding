@@ -3721,50 +3721,53 @@ def eff_ham_a7(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=False,four_bod
 
 
 def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: bool = False, four_body: bool  = False,):
-    mccsd = cc.UCCSD(system.meanfield, frozen=system.nfrozen)
-    # mccsd.conv_tol = 1e-12
-    # mccsd.conv_tol_normt = 1e-10
-    mccsd.max_cycle = 1000
-    mccsd.verbose = 0
-    mccsd.kernel()
+	key = approximation.strip().lower()
+	fmat, vten = H._f, H._v 
 
-    t1_amps = np.array(mccsd.t1)
-    t2_amps = np.array(mccsd.t2)
+	if key != "a1":
+		mccsd = cc.UCCSD(system.meanfield, frozen=system.nfrozen)
+		# mccsd.conv_tol = 1e-12
+		# mccsd.conv_tol_normt = 1e-10
+		mccsd.max_cycle = 1000
+		mccsd.verbose = 0
+		mccsd.kernel()
 
-    fmat, vten = H._f, H._v 
-    ccsd_energy = calc_ccsd(fmat, vten, t1_amps, t2_amps, verbose=0)
-    assert np.isclose(ccsd_energy+system.meanfield.e_tot, mccsd.e_tot, rtol=0.0, atol=1e-8)
-    ccsd_summary(mccsd.e_tot, ccsd_energy)
+		t1_amps = np.array(mccsd.t1)
+		t2_amps = np.array(mccsd.t2)
 
-    print("\n   DUCC Calculation Summary")
-    print("   -------------------------------------")
-    print("Size of the active space                       :%10i" %(n_act))
-    n_a = system.n_a
-    n_b = system.n_b 
-    t0 = time.perf_counter()
-    key = approximation.strip().lower()
-    if key == "a1":
-        ham = eff_ham_a1(fmat,vten,n_a,n_b,n_act)    
-    elif key == "a2":
-        ham = eff_ham_a2(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body)
-    elif key == "a3":
-        ham = eff_ham_a3(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body)
-    elif key == "a4":
-        ham = eff_ham_a4(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body)
-    elif key == "a5":
-        ham = eff_ham_a5(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body,four_body=four_body)
-    elif key == "a6":
-        ham = eff_ham_a6(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body,four_body=four_body)
-    elif key == "a7":
-        ham = eff_ham_a7(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body,four_body=four_body)        
-    else:
-        raise ValueError(f"Unsupported DUCC method {key!r}; choose between 'A1' to 'A7'.")
+		ccsd_energy = calc_ccsd(fmat, vten, t1_amps, t2_amps, verbose=0)
+		assert np.isclose(ccsd_energy+system.meanfield.e_tot, mccsd.e_tot, rtol=0.0, atol=1e-8)
+		ccsd_summary(mccsd.e_tot, ccsd_energy)
 
-    print(f"DUCC {key.upper()} hamiltonian constructed!")
-    dt = time.perf_counter() - t0
-    m, s = divmod(dt, 60)
-    print("DUCC wall time                                 :%8.2f m  %3.2f s" % (m, s))
+	print("\n   DUCC Calculation Summary")
+	print("   -------------------------------------")
+	print("Size of the active space                       :%10i" %(n_act))
+	n_a = system.n_a
+	n_b = system.n_b 
+	t0 = time.perf_counter()
     
-    return ham 
+	if key == "a1":
+		ham = eff_ham_a1(fmat,vten,n_a,n_b,n_act)    
+	elif key == "a2":
+		ham = eff_ham_a2(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body)
+	elif key == "a3":
+		ham = eff_ham_a3(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body)
+	elif key == "a4":
+		ham = eff_ham_a4(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body)
+	elif key == "a5":
+		ham = eff_ham_a5(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body,four_body=four_body)
+	elif key == "a6":
+		ham = eff_ham_a6(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body,four_body=four_body)
+	elif key == "a7":
+		ham = eff_ham_a7(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=three_body,four_body=four_body)        
+	else:
+		raise ValueError(f"Unsupported DUCC method {key!r}; choose between 'A1' to 'A7'.")
+
+	print(f"DUCC {key.upper()} hamiltonian constructed!")
+	dt = time.perf_counter() - t0
+	m, s = divmod(dt, 60)
+	print("DUCC wall time                                 :%8.2f m  %3.2f s" % (m, s))
+
+	return ham 
 
 

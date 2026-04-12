@@ -133,10 +133,59 @@ class Hamiltonian:
         n_so = self._f.shape[0]
         return f"<Hamiltonian | {n_so} spin orbitals>"
 
+    def _check_compatibility(self, other: "Hamiltonian") -> None:
+        """Ensure two Hamiltonians can be combined term by term."""
+        if not isinstance(other, Hamiltonian):
+            raise TypeError(f"Expected Hamiltonian, got {type(other).__name__}")
+
+        if self.n_a != other.n_a or self.n_b != other.n_b:
+            raise ValueError("Cannot combine Hamiltonians with different electron counts.")
+        if self.n_orb != other.n_orb or self.n_act != other.n_act:
+            raise ValueError("Cannot combine Hamiltonians with different orbital spaces.")
+        if self._f.shape != other._f.shape or self._v.shape != other._v.shape:
+            raise ValueError("Cannot combine Hamiltonians with different tensor shapes.")
+        if (self._w is None) != (other._w is None):
+            raise ValueError("Cannot combine Hamiltonians when only one has three-body terms.")
+        if (self._x is None) != (other._x is None):
+            raise ValueError("Cannot combine Hamiltonians when only one has four-body terms.")
+        if self._w is not None and self._w.shape != other._w.shape:
+            raise ValueError("Cannot combine Hamiltonians with different three-body tensor shapes.")
+        if self._x is not None and self._x.shape != other._x.shape:
+            raise ValueError("Cannot combine Hamiltonians with different four-body tensor shapes.")
+
+    @staticmethod
+    def _combine_optional_tensors(a, b, op):
+        if a is None and b is None:
+            return None
+        return op(a, b)
+
+    def _binary_op(self, other: "Hamiltonian", op):
+        self._check_compatibility(other)
+        return Hamiltonian(
+            op(self._f, other._f),
+            op(self._v, other._v),
+            self.n_a,
+            self.n_b,
+            self.n_orb,
+            op(self.constant, other.constant),
+            n_act=self.n_act,
+            w=self._combine_optional_tensors(self._w, other._w, op),
+            x=self._combine_optional_tensors(self._x, other._x, op),
+        )
+
+    def __add__(self, other: "Hamiltonian"):
+        return self._binary_op(other, lambda a, b: a + b)
+
+    def __sub__(self, other: "Hamiltonian"):
+        return self._binary_op(other, lambda a, b: a - b)
+
     def export_pyscf(self):
         # Move back to physical vacuum 
         n_occ = self.n_a+self.n_b
-        n_act = self.n_act
+        if self.n_act is not None:
+            n_act = self.n_act
+        else:
+            n_act = self.n_orb
 
         fdic = one_body_mat2dic(self._f, n_occ, n_act, n_act)
         vdic = two_body_ten2dic(4*self._v, n_occ, n_act, n_act)
@@ -287,6 +336,141 @@ class Hamiltonian:
         self._v = self._v[:,:,:,0:2*orb_subset][:,:,0:2*orb_subset][:,0:2*orb_subset][0:2*orb_subset]
         return None 
 
+    def get_MO_integrals(self):
+        # Move back to physical vacuum 
+        n_occ = self.n_a+self.n_b
+        if self.n_act is not None:
+            n_act = self.n_act
+        else:
+            n_act = self.n_orb
+
+        fdic = one_body_mat2dic(self._f, n_occ, n_act, n_act)
+        vdic = two_body_ten2dic(4*self._v, n_occ, n_act, n_act)
+    
+        fdic_pv = cp.deepcopy(fdic)
+        vdic_pv = cp.deepcopy(vdic)
+        constant_pv = cp.deepcopy(self.constant)
+
+        fdic_pv["oo"] -= np.einsum("ipiq->pq", vdic["oooo"]) 
+        fdic_pv["ov"] -= np.einsum("ipiq->pq", vdic["ooov"])
+        fdic_pv["vo"] -= np.einsum("ipiq->pq", vdic["ovoo"]) 
+        fdic_pv["vv"] -= np.einsum("ipiq->pq", vdic["ovov"]) 
+
+        # constant_pv -= np.einsum("ii->", fdic_pv["oo"]) 
+        # constant_pv -= np.einsum("ijij->", vdic_pv["oooo"])/2	
+
+        # 1) Export spin orbital integrals to spatial orbital integrals
+        # 2) Convert from physicist's notation to chemist's
+        # 3) Assume RHF orbitals
+
+        n = n_act 
+        nv = 2*n_act-n_occ
+        h = np.zeros((n, n))
+        g = np.zeros((n, n, n, n))
+
+        idx_map = {}
+        idx_map["o"] = [(i,2*i,2*i+1) for i in range(n_occ//2)]
+        idx_map["v"] = [(i+n_occ//2, 2*i, 2*i+1) for i in range(nv//2)]
+
+        for block in fdic_pv.keys():
+            for p,pa,pb in idx_map[block[0]]:
+                for q,qa,qb in idx_map[block[1]]:
+                    h[p,q] = fdic_pv[block][pa,qa]
+
+        block = "oooo" 
+        for p,pa,pb in idx_map[block[0]]:
+            for q,qa,qb in idx_map[block[1]]:
+                for r,ra,rb in idx_map[block[2]]:
+                    for s,sa,sb in idx_map[block[3]]:
+                        g[p,q,r,s] =  vdic_pv[block][pa,qb,ra,sb] # oooo
+
+
+        block = "ooov" 
+        for p,pa,pb in idx_map[block[0]]:
+            for q,qa,qb in idx_map[block[1]]:
+                for r,ra,rb in idx_map[block[2]]:
+                    for s,sa,sb in idx_map[block[3]]:
+                        g[p,q,r,s] =  vdic_pv[block][pa,qb,ra,sb] # ooov
+                        g[p,q,s,r] = -vdic_pv[block][pa,qb,rb,sa] # oovo
+
+
+        block = "ovoo" 
+        for p,pa,pb in idx_map[block[0]]:
+            for q,qa,qb in idx_map[block[1]]:
+                for r,ra,rb in idx_map[block[2]]:
+                    for s,sa,sb in idx_map[block[3]]:
+                        g[p,q,r,s] =  vdic_pv[block][pa,qb,ra,sb] # ovoo
+                        g[q,p,r,s] = -vdic_pv[block][pa,qb,rb,sa] # vooo
+
+
+        block = "ovvv" 
+        for p,pa,pb in idx_map[block[0]]:
+            for q,qa,qb in idx_map[block[1]]:
+                for r,ra,rb in idx_map[block[2]]:
+                    for s,sa,sb in idx_map[block[3]]:
+                        g[p,q,r,s] =  vdic_pv[block][pa,qb,ra,sb] # ovvv
+                        g[q,p,r,s] = -vdic_pv[block][pa,qb,rb,sa] # vovv
+
+
+        block = "vvov" 
+        for p,pa,pb in idx_map[block[0]]:
+            for q,qa,qb in idx_map[block[1]]:
+                for r,ra,rb in idx_map[block[2]]:
+                    for s,sa,sb in idx_map[block[3]]:
+                        g[p,q,r,s] =  vdic_pv[block][pa,qb,ra,sb] # vvov
+                        g[p,q,s,r] = -vdic_pv[block][pa,qb,rb,sa] # vvvo
+
+
+
+        block = "oovv" 
+        for p,pa,pb in idx_map[block[0]]:
+            for q,qa,qb in idx_map[block[1]]:
+                for r,ra,rb in idx_map[block[2]]:
+                    for s,sa,sb in idx_map[block[3]]:
+                        g[p,q,r,s] = vdic_pv[block][pa,qb,ra,sb] # oovv
+
+        block = "vvoo" 
+        for p,pa,pb in idx_map[block[0]]:
+            for q,qa,qb in idx_map[block[1]]:
+                for r,ra,rb in idx_map[block[2]]:
+                    for s,sa,sb in idx_map[block[3]]:
+                        g[p,q,r,s] = vdic_pv[block][pa,qb,ra,sb] # vvoo
+
+        block = "ovov" 
+        for p,pa,pb in idx_map[block[0]]:
+            for q,qa,qb in idx_map[block[1]]:
+                for r,ra,rb in idx_map[block[2]]:
+                    for s,sa,sb in idx_map[block[3]]:
+                        g[p,q,r,s] =  vdic_pv[block][pa,qb,ra,sb] # ovov
+                        g[q,p,s,r] =  vdic_pv[block][pa,qb,ra,sb] # vovo
+                        g[p,q,s,r] = -vdic_pv[block][pa,qb,rb,sa] # vovo
+                        g[q,p,r,s] = -vdic_pv[block][pa,qb,rb,sa] # ovvo
+
+        block = "vvvv" 
+        for p,pa,pb in idx_map[block[0]]:
+            for q,qa,qb in idx_map[block[1]]:
+                for r,ra,rb in idx_map[block[2]]:
+                    for s,sa,sb in idx_map[block[3]]:
+                        g[p,q,r,s] =  vdic_pv[block][pa,qb,ra,sb] # vvvv
+
+        g = np.einsum("pqrs->prqs",g)
+
+        # print("a: ", g[0,1,2,1]) 
+        # print("b: ", g[1,0,1,2]) 
+        # Check for proper symmetries
+        assert(np.allclose(h, h.T.conj()))
+
+        # for p in range(g.shape[0]):
+        #     for q in range(g.shape[1]):
+        #         for r in range(g.shape[2]):
+        #             for s in range(g.shape[3]):
+        #                 if min([p,q,r,s]) <2: continue
+        #                 if max([p,q,r,s]) >1: continue
+        #                 if not np.isclose(g[p,q,r,s], g[q,p,s,r]):
+        #                     print("p,q,r,s: ", p,q,r,s,g[p,q,r,s],g[q,p,s,r])
+
+        return constant_pv, h, g       
+
 
 """
 ## Use case 
@@ -301,4 +485,3 @@ matrix_form = H(HamFormat.MATRIX)
 # 3. Pythonic string formatting
 print(f"{H:block_dict}")         
 """
-
