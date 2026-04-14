@@ -24,10 +24,11 @@ def calc_hf(system, H):
     """
     t0 = time.perf_counter()
 
-    n_a, n_b = system.n_a, system.n_b
+    n_a, n_b = H.n_a, H.n_b
     E_nuc    = system.nuclear_repulsion
 
-    constant, h, g = H(HamFormat.SPATORB_PV)
+    # constant, h, g = H(HamFormat.SPATORB_PV)
+    constant, h, g = H.get_MO_integrals()
     print(f"\nNuclear Repulsion Energy: {E_nuc:.10f}")
     print(f"\nConstant Energy: {constant:.10f}")
 

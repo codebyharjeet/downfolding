@@ -130,11 +130,18 @@ def load_pyscf_integrals(meanfield, n_frzn_occ=0,n_act=None, dm0=None, stability
     return system, hamiltonian, hf_energy
 
 
-def load_mo_integrals(meanfield, n_e, n_orb, ecore, h1, h2, n_frzn_occ=0, data_type=np.float64):
+def load_mo_integrals(meanfield, n_e, n_orb, ecore, h1, h2, nfrozen=0, data_type=np.float64):
     time_init = time.time()
 
-    n_a = n_b = n_e // 2
+    n_e_rem = n_e - (2 * nfrozen)
+    n_a_rem = n_b_rem = n_e_rem // 2
+    n_orb_rem = n_orb - nfrozen
     n_qubits = 2*n_orb
+
+    print("Number of active electrons: %d"%(n_e_rem))
+    print("Number of active orbitals: %d"%(n_orb_rem))
+    print("Number of n_active alpha electrons: %d"%(n_a_rem))
+    print("Number of n_active beta electrons: %d"%(n_b_rem))
 
     A = np.array([[1,0],[0,0]])
     B = np.array([[0,0],[0,1]])
@@ -151,7 +158,9 @@ def load_mo_integrals(meanfield, n_e, n_orb, ecore, h1, h2, n_frzn_occ=0, data_t
               np.kron(h2, BB))
     
 
-    hamiltonian = Hamiltonian.from_physical_vacuum(h, eri_so, n_a, n_b, n_orb, constant=ecore)
+    hamiltonian = Hamiltonian.from_physical_vacuum(h, eri_so, n_a_rem, n_b_rem, n_orb_rem, constant=ecore)
+    
+    n_a = n_b = n_e // 2
     system = System(
         meanfield,
         n_e,
@@ -159,7 +168,7 @@ def load_mo_integrals(meanfield, n_e, n_orb, ecore, h1, h2, n_frzn_occ=0, data_t
         n_b,
         n_orb,
         n_qubits,
-        nfrozen=n_frzn_occ,
+        nfrozen=nfrozen,
         nuclear_repulsion=ecore,
         mo_energies=meanfield.mo_energy,
         mo_occupation=meanfield.mo_occ,

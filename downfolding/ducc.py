@@ -3,7 +3,7 @@ import numpy as np
 import copy as cp 
 import pyscf
 from pyscf import gto, scf, mcscf, fci, ao2mo, lo, cc, lib
-from pyscf.cc import ccsd
+from pyscf.cc import ccsd, uccsd 
 from downfolding.hamiltonian import HamFormat, Hamiltonian
 from downfolding.ccsd import calc_ccsd
 from downfolding.helper import asym_term, one_body_mat2dic, one_body_dic2mat, two_body_ten2dic, two_body_dic2ten, three_body_ten2dic, three_body_dic2ten, four_body_ten2dic, four_body_dic2ten, t1_mat2dic, t2_ten2dic, get_many_body_terms, as_proj, t1_to_op, t2_to_op, t1_to_ext, t2_to_ext
@@ -3720,30 +3720,45 @@ def eff_ham_a7(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=False,four_bod
         return Hamiltonian(one_body_as, two_body_as, n_a, n_b, n_orb, constant, n_act=n_act)
 
 
-def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: bool = False, four_body: bool  = False,):
+def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: bool = False, four_body: bool  = False, C_full_loc=None):
 	key = approximation.strip().lower()
 	fmat, vten = H._f, H._v 
+	n_a = H.n_a
+	n_b = H.n_b
 
 	if key != "a1":
-		mccsd = cc.UCCSD(system.meanfield, frozen=system.nfrozen)
+		if C_full_loc is not None:
+			mccsd = cc.CCSD(system.meanfield, frozen=system.nfrozen, mo_coeff=C_full_loc)
+		else:
+			mccsd = cc.CCSD(system.meanfield, frozen=system.nfrozen)
 		# mccsd.conv_tol = 1e-12
 		# mccsd.conv_tol_normt = 1e-10
 		mccsd.max_cycle = 1000
-		mccsd.verbose = 0
+		mccsd.verbose = 4
+		# mccsd.level_shift = 0.5
+		
 		mccsd.kernel()
 
 		t1_amps = np.array(mccsd.t1)
 		t2_amps = np.array(mccsd.t2)
 
-		ccsd_energy = calc_ccsd(fmat, vten, t1_amps, t2_amps, verbose=0)
+		t1_amps, t2_amps = map(np.array, uccsd.amplitudes_from_rccsd(t1_amps, t2_amps))
+
+		ccsd_energy = calc_ccsd(fmat, vten, t1_amps, t2_amps, verbose=4)
+        
 		assert np.isclose(ccsd_energy+system.meanfield.e_tot, mccsd.e_tot, rtol=0.0, atol=1e-8)
 		ccsd_summary(mccsd.e_tot, ccsd_energy)
 
+
 	print("\n   DUCC Calculation Summary")
 	print("   -------------------------------------")
+	print("Number of orbitals in the full space           :%10i" %(fmat.shape[0]//2))
 	print("Size of the active space                       :%10i" %(n_act))
-	n_a = system.n_a
-	n_b = system.n_b 
+	print("DUCC approximation level                       :%10s" %(key.upper()))
+	print("Number of alpha electrons in active space      :%10i" %(H.n_a))
+	print("Number of beta electrons in active space       :%10i" %(H.n_b))
+    
+
 	t0 = time.perf_counter()
     
 	if key == "a1":

@@ -31,6 +31,9 @@ def calc_ccsd(fmat, vten, t1_amps, t2_amps, verbose=0):
     virt_alpha = slice(2*n_a, 2*n_orb, 2)  # Alpha virtual indices
     virt_beta = slice(2*n_a + 1, 2*n_orb, 2)  # Beta virtual indices
 
+    print("Norm of F_ia = %20.12e" % np.linalg.norm(fmat[occ_alpha, virt_alpha]))
+    print("Norm of F_ia = %20.12e" % np.linalg.norm(fmat[occ_beta, virt_beta]))
+
     # Initialize correlation energy
     ECCSD = 0.0
 

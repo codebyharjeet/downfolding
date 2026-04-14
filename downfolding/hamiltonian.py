@@ -84,7 +84,7 @@ class Hamiltonian:
 
     @classmethod
     def from_physical_vacuum(cls, h: Array, v: Array, n_a: int, n_b: int, n_orb: int, constant: float = 0.0, *, n_act: int | None = None, w: Array | None = None, x: Array | None = None,) -> Hamiltonian:
-        """
+        r"""
         Convert physical vacuum(h, v) to fermi vacuum (f, v)
         f_{pq} = h_{pq} + \sum_{i \in occ} <pi||qi>
         v^{pq}_{rs} = <pq||rs>
@@ -338,6 +338,7 @@ class Hamiltonian:
 
     def get_MO_integrals(self):
         # Move back to physical vacuum 
+
         n_occ = self.n_a+self.n_b
         if self.n_act is not None:
             n_act = self.n_act

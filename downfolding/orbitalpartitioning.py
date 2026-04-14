@@ -209,6 +209,7 @@ def svd_subspace_partitioning(orbitals_blocks, Pv, S):
     nmo = 0
     for i in orbitals_blocks:
         assert(i.shape[0] == nbas)
+        print(" Orbital block has %4i orbitals" % i.shape[1])
         nmo += i.shape[1]
 
 
