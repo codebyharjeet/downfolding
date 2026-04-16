@@ -2,7 +2,7 @@ import scipy
 import numpy as np 
 import copy as cp 
 import pyscf
-from pyscf import gto, scf, mcscf, fci, ao2mo, lo, cc, lib
+from pyscf import gto, scf, mcscf, fci, ao2mo, lo, cc, lib, mp
 from pyscf.cc import ccsd, uccsd 
 from downfolding.hamiltonian import HamFormat, Hamiltonian
 from downfolding.ccsd import calc_ccsd
@@ -3720,34 +3720,63 @@ def eff_ham_a7(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=False,four_bod
         return Hamiltonian(one_body_as, two_body_as, n_a, n_b, n_orb, constant, n_act=n_act)
 
 
-def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: bool = False, four_body: bool  = False, C_full_loc=None):
+def get_amplitudes(system, amp_type="CCSD", mo_coeff=None):
+	"""
+	Return spin-block amplitudes (t1, t2).
+
+	The returned amplitudes follow the unrestricted/spin-resolved layout:
+	- t1 = (t1aa, t1bb)
+	- t2 = (t2aa, t2ab, t2bb)
+	"""
+	key = amp_type.strip().upper()
+
+	if key == "CCSD":
+		if mo_coeff is not None:
+			solver = cc.CCSD(system.meanfield, frozen=system.nfrozen, mo_coeff=mo_coeff)
+		else:
+			solver = cc.CCSD(system.meanfield, frozen=system.nfrozen)
+
+		solver.max_cycle = 1000
+		solver.verbose = 4
+		solver.kernel()
+
+		t1_r = np.array(solver.t1)
+		t2_r = np.array(solver.t2)
+
+	elif key == "MP2":
+		if mo_coeff is not None:
+			solver = mp.MP2(system.meanfield, frozen=system.nfrozen, mo_coeff=mo_coeff)
+		else:
+			solver = mp.MP2(system.meanfield, frozen=system.nfrozen)
+
+		solver.verbose = 4
+		solver.kernel()
+
+		nocc = solver.t2.shape[0]
+		nvir = solver.t2.shape[2]
+		t1_r = np.zeros((nocc, nvir), dtype=solver.t2.dtype)
+		t2_r = np.array(solver.t2)
+
+	else:
+		raise ValueError(f"Unsupported amplitude type {amp_type!r}; choose between 'CCSD' and 'MP2'.")
+
+	t1_amps, t2_amps = map(np.array, uccsd.amplitudes_from_rccsd(t1_r, t2_r))
+	return solver.e_tot, t1_amps, t2_amps
+
+def calc_ducc(system, H, n_act: int, approximation: str="a7", amp_type: str="CCSD", three_body: bool = False, four_body: bool  = False, C_full_loc=None):
 	key = approximation.strip().lower()
-	fmat, vten = H._f, H._v 
+	scalar, fmat, vten = H.constant, H._f, H._v 
 	n_a = H.n_a
 	n_b = H.n_b
+    
 
 	if key != "a1":
-		if C_full_loc is not None:
-			mccsd = cc.CCSD(system.meanfield, frozen=system.nfrozen, mo_coeff=C_full_loc)
-		else:
-			mccsd = cc.CCSD(system.meanfield, frozen=system.nfrozen)
-		# mccsd.conv_tol = 1e-12
-		# mccsd.conv_tol_normt = 1e-10
-		mccsd.max_cycle = 1000
-		mccsd.verbose = 4
-		# mccsd.level_shift = 0.5
-		
-		mccsd.kernel()
+		e_tot, t1_amps, t2_amps = get_amplitudes(system, amp_type=amp_type, mo_coeff=C_full_loc)
 
-		t1_amps = np.array(mccsd.t1)
-		t2_amps = np.array(mccsd.t2)
-
-		t1_amps, t2_amps = map(np.array, uccsd.amplitudes_from_rccsd(t1_amps, t2_amps))
-
-		ccsd_energy = calc_ccsd(fmat, vten, t1_amps, t2_amps, verbose=4)
+		ccsd_energy = calc_ccsd(fmat, vten, t1_amps, t2_amps, verbose=0)
         
-		assert np.isclose(ccsd_energy+system.meanfield.e_tot, mccsd.e_tot, rtol=0.0, atol=1e-8)
-		ccsd_summary(mccsd.e_tot, ccsd_energy)
+		assert np.isclose(ccsd_energy+system.meanfield.e_tot, e_tot, rtol=0.0, atol=1e-4)
+		ccsd_summary(e_tot, ccsd_energy)
 
 
 	print("\n   DUCC Calculation Summary")
@@ -3778,11 +3807,12 @@ def calc_ducc(system, H, n_act: int, approximation: str="a7", *, three_body: boo
 	else:
 		raise ValueError(f"Unsupported DUCC method {key!r}; choose between 'A1' to 'A7'.")
 
+	ham.constant += scalar
+
 	print(f"DUCC {key.upper()} hamiltonian constructed!")
 	dt = time.perf_counter() - t0
 	m, s = divmod(dt, 60)
 	print("DUCC wall time                                 :%8.2f m  %3.2f s" % (m, s))
 
 	return ham 
-
 

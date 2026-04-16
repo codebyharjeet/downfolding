@@ -137,5 +137,5 @@ def ducc_summary(energy: float, backend: Literal["pyscf", "openfermion"], hf_ene
 	"""
 	print(f"\n   Exact Diagonalization Summary (using {backend})")
 	print("   -------------------------------------")
-	print(f"DUCC Full CI Correlation Energy                :%18.12f"%(energy))  
-	print(f"DUCC Full CI Total Energy                      :%18.12f"%(energy+hf_energy))  
+	print(f"DUCC Full CI Correlation Energy                :%18.12f"%(energy-hf_energy))  
+	print(f"DUCC Full CI Total Energy                      :%18.12f"%(energy))

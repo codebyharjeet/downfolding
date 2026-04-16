@@ -92,6 +92,11 @@ class Hamiltonian:
         o = slice(None, n_a+n_b)        
         v_fv = contract('prqs', v) - contract('psqr', v)
         f = h + contract('piqi->pq', v_fv[:, o, :, o])
+
+        e0_1body = np.einsum('ii->', h[o, o])
+        e0_2body = 0.5 * np.einsum('ijij->', v_fv[o, o, o, o])
+        constant += e0_1body + e0_2body
+
         return cls(f, 0.25*v_fv, n_a, n_b, n_orb,constant,n_act=n_act, w=w, x=x)
     
     def _as_spatorb_pv(self):
@@ -197,7 +202,7 @@ class Hamiltonian:
         fdic_pv["oo"] -= np.einsum("ipiq->pq", vdic["oooo"]) 
         fdic_pv["ov"] -= np.einsum("ipiq->pq", vdic["ooov"])
         fdic_pv["vo"] -= np.einsum("ipiq->pq", vdic["ovoo"]) 
-        fdic_pv["vv"] -= np.einsum("ipiq->pq", vdic["ovov"]) 
+        fdic_pv["vv"] -= np.einsum("ipiq->pq", vdic["ovov"])
 
         constant_pv -= np.einsum("ii->", fdic_pv["oo"]) 
         constant_pv -= np.einsum("ijij->", vdic_pv["oooo"])/2	

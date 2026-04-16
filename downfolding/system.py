@@ -35,7 +35,6 @@ class System():
         n_a,
         n_b,
         norbitals,
-        nqubits,
         nfrozen,
         nuclear_repulsion=0.0,
         mo_energies=None,
@@ -47,7 +46,6 @@ class System():
         self.n_a = n_a
         self.n_b = n_b
         self.norbitals = norbitals
-        self.nqubits = nqubits 
         self.nfrozen = nfrozen
         self.nuclear_repulsion = nuclear_repulsion
         self.mo_energies = mo_energies

@@ -74,3 +74,33 @@ def get_memory_usage():
     current_process = psutil.Process(os.getpid())
     memory = current_process.memory_info().rss # RSS (e.g., RAM usage) memory in bytes
     return memory / (1024 * 1024)            
+
+def check_8fold_symmetry(h2, tol=1e-10):
+    """
+    Checks if a 2-electron tensor in chemist's notation (pq|rs) 
+    obeys strict 8-fold spatial symmetry.
+    """
+    # 1. Check p <-> q exchange: (pq|rs) == (qp|rs)
+    sym_pq = np.allclose(h2, np.transpose(h2, (1, 0, 2, 3)), atol=tol)
+    
+    # 2. Check r <-> s exchange: (pq|rs) == (pq|sr)
+    sym_rs = np.allclose(h2, np.transpose(h2, (0, 1, 3, 2)), atol=tol)
+    
+    # 3. Check (pq) <-> (rs) pair exchange: (pq|rs) == (rs|pq)
+    sym_pq_rs = np.allclose(h2, np.transpose(h2, (2, 3, 0, 1)), atol=tol)
+    
+    print("--- Symmetry Check Results ---")
+    print(f"(pq|rs) = (qp|rs) [p<->q] : {sym_pq}")
+    print(f"(pq|rs) = (pq|sr) [r<->s] : {sym_rs}")
+    print(f"(pq|rs) = (rs|pq) [pairs] : {sym_pq_rs}")
+    print("------------------------------")
+    
+    if sym_pq and sym_rs and sym_pq_rs:
+        print("Conclusion: Tensor has FULL 8-fold symmetry.")
+        print("Action: Safe to use fci.direct_spin0.FCISolver().")
+    else:
+        print("Conclusion: Tensor LACKS 8-fold symmetry.")
+        print("Action: MUST use fci.direct_nosym.FCISolver().")
+
+
+        

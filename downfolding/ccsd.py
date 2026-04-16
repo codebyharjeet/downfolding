@@ -55,7 +55,7 @@ def calc_ccsd(fmat, vten, t1_amps, t2_amps, verbose=0):
     m, s = divmod(dt, 60)
 
     if verbose != 0:
-        print("\n   CCSD Calculation Summary")
+        print("\n   CCSD Calculation Summary (Manual Implementation)")
         print("   -------------------------------------")
         print(f"   Total wall time: {m:0.2f} m  {s:0.2f} s")
         print(f"   CCSD Correction = {ECCSD:16.10f}")

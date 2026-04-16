@@ -15,10 +15,10 @@ def _check_ducc(approx, expected):
     driver = Driver.from_pyscf(mf, nfrozen=0)
 
     # run and test
-    driver.run_ducc(n_act=6, approximation=approx, three_body=True, four_body=False)
+    driver.run_ducc(n_act=6, approximation=approx, amp_type="CCSD", three_body=True, four_body=False)
     for backend in ("openfermion",):
         energy = driver.exact_diagonalize(backend=backend)
-        npt.assert_allclose(energy, expected,atol=1e-8, rtol=0,err_msg=f"DUCC {approx!r} {backend} energy mismatch")
+        npt.assert_allclose(energy-mf.e_tot, expected,atol=1e-8, rtol=0,err_msg=f"DUCC {approx!r} {backend} energy mismatch")
 
 def test_004_ducc_a1():
     _check_ducc("a1", -0.024496039319077)

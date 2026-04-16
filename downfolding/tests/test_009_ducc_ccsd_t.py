@@ -15,7 +15,7 @@ def test_007_ducc_ccsd_t():
     mf.kernel(verbose=0)
     driver = Driver.from_pyscf(mf, nfrozen=0)
 
-    driver.run_ducc(n_act=5, approximation="a7", three_body=False, four_body=False)
+    driver.run_ducc(n_act=5, approximation="a7", amp_type="CCSD", three_body=False, four_body=False)
 
     driver.exact_diagonalize(backend="pyscf")
 
@@ -24,4 +24,4 @@ def test_007_ducc_ccsd_t():
     driver.run_ccsd_t()
 
     
-test_007_ducc_ccsd_t()
+# test_007_ducc_ccsd_t()
