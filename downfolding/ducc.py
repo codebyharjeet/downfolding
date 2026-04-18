@@ -3769,14 +3769,14 @@ def calc_ducc(system, H, n_act: int, approximation: str="a7", amp_type: str="CCS
 	n_a = H.n_a
 	n_b = H.n_b
     
-
+	ccsd_energy = None 
 	if key != "a1":
-		e_tot, t1_amps, t2_amps = get_amplitudes(system, amp_type=amp_type, mo_coeff=C_full_loc)
+		ccsd_energy, t1_amps, t2_amps = get_amplitudes(system, amp_type=amp_type, mo_coeff=C_full_loc)
 
-		ccsd_energy = calc_ccsd(fmat, vten, t1_amps, t2_amps, verbose=0)
+		ccsd_energy_1 = calc_ccsd(fmat, vten, t1_amps, t2_amps, verbose=0)
         
-		assert np.isclose(ccsd_energy+system.meanfield.e_tot, e_tot, rtol=0.0, atol=1e-4)
-		ccsd_summary(e_tot, ccsd_energy)
+		assert np.isclose(ccsd_energy_1+system.meanfield.e_tot, ccsd_energy, rtol=0.0, atol=1e-8)
+		ccsd_summary(ccsd_energy, ccsd_energy_1)
 
 
 	print("\n   DUCC Calculation Summary")
@@ -3814,5 +3814,5 @@ def calc_ducc(system, H, n_act: int, approximation: str="a7", amp_type: str="CCS
 	m, s = divmod(dt, 60)
 	print("DUCC wall time                                 :%8.2f m  %3.2f s" % (m, s))
 
-	return ham 
+	return ham, ccsd_energy
 

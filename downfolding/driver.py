@@ -39,6 +39,7 @@ class Driver:
         self.H = hamiltonian
         self.hf_energy = hf_energy
         self.correlation_energy = 0
+        self.ccsd_energy = None 
 
     
     def run_hf(self):
@@ -74,8 +75,9 @@ class Driver:
         """
         from downfolding.ducc import calc_ducc
 
-        ham = calc_ducc(self.system, self.H, n_act, approximation, amp_type=amp_type, three_body=three_body, four_body=four_body, C_full_loc=C_full_loc)
+        ham, ccsd_energy = calc_ducc(self.system, self.H, n_act, approximation, amp_type=amp_type, three_body=three_body, four_body=four_body, C_full_loc=C_full_loc)
         setattr(self, "H", ham)
+        setattr(self, "ccsd_energy", ccsd_energy)
 
 
     def exact_diagonalize(self, backend: str="pyscf") -> None:
