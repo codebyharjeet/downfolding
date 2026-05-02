@@ -89,32 +89,35 @@ for i in range(n_a):
     for j in range(n_b):         
         e2 += v[2*i,2*i,2*j+1,2*j+1]
 
-
-    e1 = 0
-    e2 = 0
-    config_a = range(n_a)
-    config_b = range(n_b)
-    
-    for i in config_a:
-        e1 += h[i,i]
-    for i in config_b:
-        e1 += h[i,i]
-    for i in config_a:
-        for j in config_a:
-            if i>=j:
-                continue
-            e2 += g[i,i,j,j]
-            e2 -= g[i,j,j,i]
-    for i in config_b:             
-        for j in config_b:         
-            if i>=j:                
-                continue           
-            e2 += g[i,i,j,j]
-            e2 -= g[i,j,j,i]
-    for i in config_a:             
-        for j in config_b:         
-            e2 += g[i,i,j,j]
-    
-    E_tot = e1 + e2 + E_nuc 
-
 """
+
+
+def compute_hf_energy_mo(H_mo, G_mo, n_occ):
+    """
+    Computes the restricted Hartree-Fock energy from integrals in the MO basis.
+    
+    Parameters:
+    H_mo (ndarray): 1-electron integrals in MO basis (n_mo, n_mo)
+    G_mo (ndarray): 2-electron integrals in MO basis, chemist's notation (n_mo, n_mo, n_mo, n_mo)
+    n_occ (int): Number of occupied spatial orbitals (N_electrons // 2)
+    """
+    # 1. One-Electron Energy: 2 * sum(H_ii)
+    # We take the trace of the occupied block and multiply by 2 for spin-up and spin-down
+    e_1e = 2.0 * np.trace(H_mo[:n_occ, :n_occ])
+    
+    # 2. Slice the 2-electron integrals to only include the occupied block
+    G_occ = G_mo[:n_occ, :n_occ, :n_occ, :n_occ]
+    
+    # 3. Two-Electron Energy
+    # Calculate the Coulomb (J) and Exchange (K) sums over occupied orbitals
+    # J_sum = sum_{ij} (ii|jj)
+    # K_sum = sum_{ij} (ij|ji)
+    J_sum = np.einsum('iijj->', G_occ)
+    K_sum = np.einsum('ijji->', G_occ)
+    
+    e_2e = 2.0 * J_sum - K_sum
+    
+    # 4. Total Energy
+    e_total = e_1e + e_2e
+    
+    return e_total

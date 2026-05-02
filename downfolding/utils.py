@@ -75,32 +75,60 @@ def get_memory_usage():
     memory = current_process.memory_info().rss # RSS (e.g., RAM usage) memory in bytes
     return memory / (1024 * 1024)            
 
-def check_8fold_symmetry(h2, tol=1e-10):
-    """
-    Checks if a 2-electron tensor in chemist's notation (pq|rs) 
-    obeys strict 8-fold spatial symmetry.
-    """
-    # 1. Check p <-> q exchange: (pq|rs) == (qp|rs)
-    sym_pq = np.allclose(h2, np.transpose(h2, (1, 0, 2, 3)), atol=tol)
-    
-    # 2. Check r <-> s exchange: (pq|rs) == (pq|sr)
-    sym_rs = np.allclose(h2, np.transpose(h2, (0, 1, 3, 2)), atol=tol)
-    
-    # 3. Check (pq) <-> (rs) pair exchange: (pq|rs) == (rs|pq)
-    sym_pq_rs = np.allclose(h2, np.transpose(h2, (2, 3, 0, 1)), atol=tol)
-    
-    print("--- Symmetry Check Results ---")
-    print(f"(pq|rs) = (qp|rs) [p<->q] : {sym_pq}")
-    print(f"(pq|rs) = (pq|sr) [r<->s] : {sym_rs}")
-    print(f"(pq|rs) = (rs|pq) [pairs] : {sym_pq_rs}")
-    print("------------------------------")
-    
-    if sym_pq and sym_rs and sym_pq_rs:
-        print("Conclusion: Tensor has FULL 8-fold symmetry.")
-        print("Action: Safe to use fci.direct_spin0.FCISolver().")
-    else:
-        print("Conclusion: Tensor LACKS 8-fold symmetry.")
-        print("Action: MUST use fci.direct_nosym.FCISolver().")
 
+def analyze_tensor_physics(h2, tol=1e-10):
+    """
+    Analyzes the physical and mathematical symmetries of a 2-electron 
+    tensor in chemist's notation (pq|rs).
+    """
+    # 1. Core Physical Checks
+    # Hermiticity: (pq|rs) = (qp|sr)* -> For real numbers, (pq|rs) = (qp|sr)
+    is_hermitian = np.allclose(h2, np.transpose(h2, (1, 0, 3, 2)), atol=tol)
+    
+    # Particle Indistinguishability: Electron 1 <-> Electron 2
+    is_indistinguishable = np.allclose(h2, np.transpose(h2, (2, 3, 0, 1)), atol=tol)
+    
+    # Bare Spatial Symmetry: p <-> q (Broken by DUCC downfolding)
+    has_spatial_sym = np.allclose(h2, np.transpose(h2, (1, 0, 2, 3)), atol=tol)
+
+    print("--- Core Physical Properties ---")
+    print(f"Hermitian (pq|rs == qp|sr)              : {is_hermitian}")
+    print(f"Particle Indistinguishable (pq|rs == rs|pq): {is_indistinguishable}")
+    print(f"Intra-pair Spatial Sym (pq|rs == qp|rs) : {has_spatial_sym}")
+    print("--------------------------------\n")
+
+    # 2. Mathematical Fold Count
+    permutations = {
+        "(pq|rs) [Original]":         (0, 1, 2, 3),
+        "(qp|rs) [p<->q]":            (1, 0, 2, 3),
+        "(pq|sr) [r<->s]":            (0, 1, 3, 2),
+        "(qp|sr) [Both intra]":       (1, 0, 3, 2), # Hermiticity
+        "(rs|pq) [Inter-pair]":       (2, 3, 0, 1), # Indistinguishability
+        "(rs|qp) [Inter + p<->q]":    (2, 3, 1, 0),
+        "(sr|pq) [Inter + r<->s]":    (3, 2, 0, 1),
+        "(sr|qp) [Inter + both]":     (3, 2, 1, 0)
+    }
+    
+    symmetry_fold = 0
+    
+    print("--- 8-Fold Permutation Breakdown ---")
+    for name, axes in permutations.items():
+        is_sym = np.allclose(h2, np.transpose(h2, axes), atol=tol)
+        print(f"{name:<25}: {is_sym}")
+        if is_sym:
+            symmetry_fold += 1
+            
+    print("------------------------------------")
+    print(f"Conclusion: Tensor has {symmetry_fold}-fold symmetry.")
+    
+    # Actionable advice
+    if symmetry_fold == 8:
+        print("Action: Standard Hamiltonian. Safe to use fci.direct_spin0.FCISolver().")
+    elif symmetry_fold == 4 and is_hermitian:
+        print("Action: Effective Hermitian operator. MUST use fci.direct_nosym.FCISolver().")
+    else:
+        print("Action: Asymmetric/Non-Hermitian operator. MUST use fci.direct_nosym.FCISolver().")
+        
+    return symmetry_fold, is_hermitian
 
         

@@ -3720,7 +3720,7 @@ def eff_ham_a7(fmat,vten,t1_amps,t2_amps,n_a,n_b,n_act,three_body=False,four_bod
         return Hamiltonian(one_body_as, two_body_as, n_a, n_b, n_orb, constant, n_act=n_act)
 
 
-def get_amplitudes(system, amp_type="CCSD", mo_coeff=None):
+def get_amplitudes(system, amp_type="CCSD", mo_coeff=None, t1_in=None, t2_in=None, e_tot_in=None):
 	"""
 	Return spin-block amplitudes (t1, t2).
 
@@ -3731,17 +3731,29 @@ def get_amplitudes(system, amp_type="CCSD", mo_coeff=None):
 	key = amp_type.strip().upper()
 
 	if key == "CCSD":
-		if mo_coeff is not None:
-			solver = cc.CCSD(system.meanfield, frozen=system.nfrozen, mo_coeff=mo_coeff)
+		if t1_in is not None and t2_in is not None:
+			print("Using external amplitudes for DUCC")
+			t1_r = np.array(t1_in)
+			t2_r = np.array(t2_in)
+			e_tot = e_tot_in if e_tot_in is not None else 0.0
 		else:
-			solver = cc.CCSD(system.meanfield, frozen=system.nfrozen)
+			print("Running CCSD to get amplitudes for DUCC")
+			if mo_coeff is not None:
+				solver = cc.CCSD(system.meanfield, frozen=system.nfrozen, mo_coeff=mo_coeff)
+			else:
+				solver = cc.CCSD(system.meanfield, frozen=system.nfrozen)
 
-		solver.max_cycle = 1000
-		solver.verbose = 4
-		solver.kernel()
+			solver.max_cycle = 1000
+			solver.verbose = 4
+			# solver.diis_space = 11
+			# solver.diis_start_cycle = 0
+			solver.kernel()
+			if not solver.converged:
+				exit()
 
-		t1_r = np.array(solver.t1)
-		t2_r = np.array(solver.t2)
+			t1_r = np.array(solver.t1)
+			t2_r = np.array(solver.t2)
+			e_tot = solver.e_tot
 
 	elif key == "MP2":
 		if mo_coeff is not None:
@@ -3756,14 +3768,15 @@ def get_amplitudes(system, amp_type="CCSD", mo_coeff=None):
 		nvir = solver.t2.shape[2]
 		t1_r = np.zeros((nocc, nvir), dtype=solver.t2.dtype)
 		t2_r = np.array(solver.t2)
+		e_tot = solver.e_tot
 
 	else:
 		raise ValueError(f"Unsupported amplitude type {amp_type!r}; choose between 'CCSD' and 'MP2'.")
 
 	t1_amps, t2_amps = map(np.array, uccsd.amplitudes_from_rccsd(t1_r, t2_r))
-	return solver.e_tot, t1_amps, t2_amps
+	return e_tot, t1_amps, t2_amps
 
-def calc_ducc(system, H, n_act: int, approximation: str="a7", amp_type: str="CCSD", three_body: bool = False, four_body: bool  = False, C_full_loc=None):
+def calc_ducc(system, H, n_act: int, approximation: str="a7", amp_type: str="CCSD", three_body: bool = False, four_body: bool  = False, C_full_loc=None, t1_in=None, t2_in=None, ccsd_in=None):
 	key = approximation.strip().lower()
 	scalar, fmat, vten = H.constant, H._f, H._v 
 	n_a = H.n_a
@@ -3771,10 +3784,11 @@ def calc_ducc(system, H, n_act: int, approximation: str="a7", amp_type: str="CCS
     
 	ccsd_energy = None 
 	if key != "a1":
-		ccsd_energy, t1_amps, t2_amps = get_amplitudes(system, amp_type=amp_type, mo_coeff=C_full_loc)
+		ccsd_energy, t1_amps, t2_amps = get_amplitudes(system, amp_type=amp_type, mo_coeff=C_full_loc, t1_in=t1_in, t2_in=t2_in, e_tot_in=ccsd_in)
 
 		ccsd_energy_1 = calc_ccsd(fmat, vten, t1_amps, t2_amps, verbose=0)
-        
+		print(ccsd_energy_1, ccsd_energy, system.meanfield.e_tot)
+      
 		assert np.isclose(ccsd_energy_1+system.meanfield.e_tot, ccsd_energy, rtol=0.0, atol=1e-8)
 		ccsd_summary(ccsd_energy, ccsd_energy_1)
 

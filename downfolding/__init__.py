@@ -6,7 +6,7 @@ from .driver import Driver
 from .interfaces import load_pyscf_integrals
 from .hamiltonian import HamFormat, Hamiltonian
 from .system import System
-from .hf import calc_hf
+from .hf import calc_hf, compute_hf_energy_mo
 from .ccsd import calc_ccsd, ccsd_main
 from .ccsd_t import ccsd_t_main
 from .ducc import calc_ducc

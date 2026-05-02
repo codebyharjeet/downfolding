@@ -69,13 +69,13 @@ class Driver:
         # self.correlation_energy = ccsd_etot - self.hf_energy
         return ccsd_etot, ccsd_t_corr
 
-    def run_ducc(self, n_act, approximation, amp_type, three_body, four_body, C_full_loc=None):
+    def run_ducc(self, n_act, approximation, amp_type, three_body, four_body, C_full_loc=None, t1=None, t2=None, ccsd_etot=None):
         """
         Compute the DUCC energy.
         """
         from downfolding.ducc import calc_ducc
 
-        ham, ccsd_energy = calc_ducc(self.system, self.H, n_act, approximation, amp_type=amp_type, three_body=three_body, four_body=four_body, C_full_loc=C_full_loc)
+        ham, ccsd_energy = calc_ducc(self.system, self.H, n_act, approximation, amp_type=amp_type, three_body=three_body, four_body=four_body, C_full_loc=C_full_loc, t1_in=t1, t2_in=t2, ccsd_in=ccsd_etot)
         setattr(self, "H", ham)
         setattr(self, "ccsd_energy", ccsd_energy)
 
