@@ -15,7 +15,7 @@ def latex(expr):
 # ---------------------------------------------------------------------
 w.reset_space()
 
-w.add_space("O", "fermion", "occupied",   ['I','J','K','L','M','N','P','Q'])
+# w.add_space("O", "fermion", "occupied",   ['I','J','K','L','M','N','P','Q'])
 w.add_space("o", "fermion", "occupied",   ['i','j','k','l','m','n','p','q'])
 w.add_space("v", "fermion", "unoccupied", ['a','b','c','d','e','g','x','y'])
 w.add_space("V", "fermion", "unoccupied", ['A','B','C','D','E','G','X','Y'])
@@ -23,7 +23,7 @@ w.add_space("V", "fermion", "unoccupied", ['A','B','C','D','E','G','X','Y'])
 wt = w.WickTheorem()
 
 # All orbital spaces included in the Hamiltonian
-all_spaces = "OovV"
+all_spaces = "ovV"
 
 # ---------------------------------------------------------------------
 # Fock and two-body interaction operators
@@ -48,7 +48,7 @@ W = w.utils.gen_op('v', 2, all_spaces, all_spaces)
 
 # Singles:
 # Conceptually includes V+ o, v+ O, V+ O and adjoints.
-T1_all = w.utils.gen_op('t1', 1, 'vV', 'Oo', diagonal=False)
+T1_all = w.utils.gen_op('t1', 1, 'vV', 'o', diagonal=False)
 T1_act = w.op('t1', ['v+ o'])
 T1_ext = T1_all - T1_act
 s1_ext = T1_ext - T1_ext.adjoint()
@@ -56,7 +56,7 @@ s1_ext = T1_ext - T1_ext.adjoint()
 # Doubles:
 # Conceptually includes all {v,V}{v,V} <- {O,o}{O,o}
 # blocks except the purely active v v <- o o block.
-T2_all = w.utils.gen_op('t2', 2, 'vV', 'Oo', diagonal=False)
+T2_all = w.utils.gen_op('t2', 2, 'vV', 'o', diagonal=False)
 T2_act = w.op('t2', ['v+ v+ o o'])
 T2_ext = T2_all - T2_act
 s2_ext = T2_ext - T2_ext.adjoint()
